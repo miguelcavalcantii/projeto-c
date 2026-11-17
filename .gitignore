@@ -1,0 +1,18 @@
+# Arduino / PlatformIO
+build/
+.pio/
+*.bin
+*.elf
+*.hex
+*.map
+
+# Editores e sistema
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+
+# Nunca versionar credenciais
+secrets.h
+*.env

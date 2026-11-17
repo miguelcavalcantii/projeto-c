@@ -1,0 +1,7 @@
+# Linguagens corretas na barra "Languages" do GitHub
+# (os .h e .ino do firmware sao C++, nao C)
+*.h   linguist-language=C++
+*.ino linguist-language=C++
+
+# Fluxogramas e imagens nao contam como codigo
+docs/** linguist-documentation

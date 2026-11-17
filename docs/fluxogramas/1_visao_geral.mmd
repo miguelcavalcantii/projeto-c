@@ -1,0 +1,21 @@
+flowchart TD
+    A([Liga a placa]) --> B[Inicia módulos:<br/>LCD, joystick, NVS, LittleFS, RFID]
+    B --> C{Senha do Admin<br/>cadastrada?}
+    C -- Não --> D[Primeiro uso:<br/>cadastrar senha do Admin]
+    D --> E
+    C -- Sim --> F{Bloqueio ativo<br/>na NVS?}
+    F -- Sim --> G[Tela SISTEMA BLOQUEADO<br/>contagem regressiva]
+    G -->|tempo acabou| E
+    F -- Não --> E[Tela de espera<br/>'Crachá ou OK']
+    E -->|aproxima crachá| H[Fluxo de autenticação<br/>crachá + PIN]
+    E -->|botão OK| I[Menu principal]
+    I --> J[Entrar] --> H
+    I --> K[Histórico<br/>fila circular]
+    I --> L[Usuários<br/>pede senha do Admin]
+    I --> M[Auditoria<br/>verificar / simular ataque]
+    I --> N[Status / Alertas / Sobre]
+    H --> O{Resultado}
+    O -- liberado --> P[ACESSO LIBERADO] --> E
+    O -- negado --> Q[IDS conta a falha] --> R{5ª falha?}
+    R -- Não --> E
+    R -- Sim --> G

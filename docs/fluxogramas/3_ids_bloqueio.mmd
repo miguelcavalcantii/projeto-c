@@ -1,0 +1,16 @@
+flowchart TD
+    A([Falha de autenticação]) --> B[falhas = falhas + 1<br/>grava na NVS na hora]
+    B --> C{falhas >= 5?}
+    C -- Sim --> D["tempo = min(30 s × 2^nível, 15 min)"]
+    D --> E[nível = nível + 1<br/>falhas = 0]
+    E --> F[BLOQUEIO_ATIVADO<br/>tela com contagem regressiva]
+    F --> G{Reiniciou a placa?}
+    G -- Sim --> H[Lê o tempo restante da NVS<br/>REINICIO_DURANTE_BLOQUEIO]
+    H --> F
+    G -- Não --> I{Tempo acabou?}
+    I -- Não --> F
+    I -- Sim --> J([DESBLOQUEIO])
+    C -- Não --> K{falhas >= 3?}
+    K -- Sim --> L[POSSIVEL_FORCA_BRUTA<br/>alerta no LCD e no painel]
+    K -- Não --> M[ACESSO NEGADO<br/>'Restam N']
+    N([Acesso liberado]) --> O[falhas = 0<br/>nível = 0]

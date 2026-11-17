@@ -1,0 +1,14 @@
+flowchart TD
+    A([Crachá aproximado]) --> B[Calcula id protegido<br/>HMAC da chave + UID]
+    B --> C{Busca linear no<br/>vetor de usuários}
+    C -- não achou --> X1[CARTAO_DESCONHECIDO] --> F
+    C -- achou --> D{Usuário ativo?}
+    D -- Não --> X2[CARTAO_REVOGADO] --> F
+    D -- Sim --> E[1º fator OK<br/>'algo que você tem']
+    E --> G[Digita o PIN com o joystick<br/>dígito inicial sorteado]
+    G --> H[PBKDF2-HMAC-SHA256<br/>10.000 iterações + salt]
+    H --> I{Hash igual ao<br/>salvo na NVS?}
+    I -- Sim --> J[2º fator OK<br/>'algo que você sabe']
+    J --> K[ACESSO LIBERADO<br/>zera falhas · registra na auditoria]
+    I -- Não --> X3[ACESSO_NEGADO] --> F
+    F[[IDS: registrar falha]]

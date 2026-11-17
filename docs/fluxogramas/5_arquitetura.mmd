@@ -1,0 +1,35 @@
+flowchart TB
+    subgraph PC[Computador]
+      P[Painel SOC<br/>painel/index.html<br/>Web Serial]
+    end
+    subgraph ESP[ESP32 · firmware]
+      subgraph COM[Comunicação]
+        T[telemetry_manager<br/>JSON por linha]
+      end
+      subgraph SEG[Segurança]
+        S[security_engine<br/>IDS e bloqueio]
+        CR[crypto_manager<br/>PBKDF2 · HMAC]
+        L[event_logger<br/>auditoria]
+      end
+      subgraph REG[Regras de negócio]
+        M[Máquina de estados<br/>SENTINEL.ino + abas]
+        AU[authentication<br/>PIN por usuário]
+        U[user_manager<br/>vetor de structs]
+        H[historico<br/>fila circular]
+      end
+      subgraph HW[Hardware]
+        D[display_manager<br/>LCD I2C]
+        IN[input_manager<br/>joystick + botão]
+        R[rfid_manager<br/>RC522 SPI]
+      end
+    end
+    P <-->|USB 115200| T
+    M --> AU & U & H & S & L
+    AU --> CR
+    L --> CR
+    M --> D & IN & R
+    T --> M
+    NVS[(NVS<br/>senhas, usuários,<br/>estado do IDS)]
+    FS[(LittleFS<br/>audit.log)]
+    AU & U & S --> NVS
+    L --> FS

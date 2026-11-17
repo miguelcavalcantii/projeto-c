@@ -1,0 +1,16 @@
+flowchart LR
+    subgraph Registrar
+      A([Evento]) --> B[corpo = id;boot;uptime;categoria;<br/>tipo;severidade;usuário;detalhe;hashAnterior]
+      B --> C["hash = HMAC-SHA256(chave, corpo)"]
+      C --> D[Grava a linha no<br/>/audit.log]
+      D --> E[hashAnterior = hash]
+    end
+    subgraph Verificar
+      F([Para cada linha]) --> G{id é o esperado?}
+      G -- Não --> V1[VIOLADO:<br/>registro apagado]
+      G -- Sim --> H{hashAnterior =<br/>hash da linha de cima?}
+      H -- Não --> V2[VIOLADO:<br/>corrente quebrada]
+      H -- Sim --> I{HMAC recalculado =<br/>hash gravado?}
+      I -- Não --> V3[VIOLADO:<br/>conteúdo alterado]
+      I -- Sim --> J[Próxima linha] --> F
+    end

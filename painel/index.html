@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SENTINEL · Security Operations Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #060a10; --bg-2: #0a1019; --panel: #0d141f; --panel-2: #111a27;
+    --line: #1a2534; --line-2: #243246; --text: #d7e1ee; --muted: #7a8ba1; --dim: #4b5b70;
+    --accent: #2dd4bf; --accent-2: #38bdf8;
+    --info: #38bdf8; --aviso: #facc15; --alerta: #fb923c; --critico: #f43f5e; --ok: #34d399;
+    --mono: "JetBrains Mono", ui-monospace, "Cascadia Code", Consolas, monospace;
+    --sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --radius: 10px; --side: 232px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 14px; }
+  body {
+    min-height: 100vh;
+    background-image: linear-gradient(rgba(45,212,191,.025) 1px, transparent 1px), linear-gradient(90deg, rgba(45,212,191,.025) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+  button, select, input { font-family: inherit; }
+  button { cursor: pointer; }
+
+  /* ---------- Estrutura: menu lateral + conteudo ---------- */
+  .app { display: grid; grid-template-columns: var(--side) 1fr; min-height: 100vh; }
+  aside {
+    position: sticky; top: 0; height: 100vh; border-right: 1px solid var(--line);
+    background: rgba(6,10,16,.92); display: flex; flex-direction: column; padding: 18px 14px;
+  }
+  .brand { display: flex; align-items: center; gap: 12px; padding: 4px 8px 22px; }
+  .brand svg { width: 34px; height: 34px; flex-shrink: 0; }
+  .brand-name { font-family: var(--mono); font-weight: 700; font-size: 17px; letter-spacing: .3em; }
+  .brand-sub { font-size: 10px; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; margin-top: 2px; }
+  nav { display: grid; gap: 2px; }
+  .nav-label { font-size: 10px; color: var(--dim); text-transform: uppercase; letter-spacing: .14em; padding: 14px 10px 6px; font-weight: 600; }
+  .nav-btn {
+    display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; background: none; border: 1px solid transparent;
+    color: var(--muted); padding: 9px 10px; border-radius: 8px; font-size: 13px; font-weight: 500;
+  }
+  .nav-btn svg { width: 16px; height: 16px; flex-shrink: 0; }
+  .nav-btn:hover { color: var(--text); background: var(--panel); }
+  .nav-btn.active { color: var(--accent); background: rgba(45,212,191,.08); border-color: rgba(45,212,191,.25); }
+  .nav-btn .count { margin-left: auto; font-family: var(--mono); font-size: 10px; background: var(--critico); color: #fff; border-radius: 999px; padding: 1px 7px; display: none; }
+  .nav-btn .count.show { display: inline-block; }
+  .side-foot { margin-top: auto; font-family: var(--mono); font-size: 10px; color: var(--dim); line-height: 1.7; padding: 0 8px; }
+
+  .main { min-width: 0; }
+  header {
+    display: flex; align-items: center; gap: 16px; padding: 14px 28px; border-bottom: 1px solid var(--line);
+    background: rgba(6,10,16,.85); backdrop-filter: blur(6px); position: sticky; top: 0; z-index: 20;
+  }
+  .page-title { font-size: 18px; font-weight: 600; }
+  .page-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .spacer { flex: 1; }
+  .pill {
+    display: inline-flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 12px; font-weight: 500;
+    letter-spacing: .08em; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line-2); color: var(--muted);
+  }
+  .pill .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--dim); }
+  .pill.on { color: var(--ok); border-color: rgba(52,211,153,.35); } .pill.on .dot { background: var(--ok); animation: pulse 2s infinite; }
+  .pill.warn { color: var(--aviso); border-color: rgba(250,204,21,.35); } .pill.warn .dot { background: var(--aviso); }
+  .pill.demo { color: var(--accent-2); border-color: rgba(56,189,248,.35); } .pill.demo .dot { background: var(--accent-2); animation: pulse 2s infinite; }
+  @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(52,211,153,.5); } 70% { box-shadow: 0 0 0 7px rgba(52,211,153,0); } 100% { box-shadow: 0 0 0 0 rgba(52,211,153,0); } }
+  .btn {
+    border: 1px solid var(--line-2); background: var(--panel-2); color: var(--text); padding: 8px 14px; border-radius: 8px;
+    font-size: 13px; font-weight: 500; display: inline-flex; align-items: center; gap: 8px; transition: border-color .15s, background .15s;
+  }
+  .btn:hover { border-color: var(--accent); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #04211d; }
+  .btn.primary:hover { background: #5eead4; }
+  .btn.small { padding: 5px 10px; font-size: 12px; }
+  .btn:disabled { opacity: .4; cursor: not-allowed; }
+  .meta { font-family: var(--mono); font-size: 11px; color: var(--muted); text-align: right; line-height: 1.5; }
+
+  .banner { margin: 16px 28px 0; padding: 10px 14px; border-radius: 8px; font-size: 13px; border: 1px solid; display: none; }
+  .banner.show { display: block; }
+  .banner.warn { border-color: rgba(250,204,21,.35); background: rgba(250,204,21,.06); color: #fde68a; }
+  .banner.demo { border-color: rgba(56,189,248,.35); background: rgba(56,189,248,.06); color: #bae6fd; }
+  .banner.lock { border-color: rgba(244,63,94,.5); background: rgba(244,63,94,.08); color: #fecdd3; font-family: var(--mono); }
+
+  /* ---------- Paginas ---------- */
+  .page { display: none; padding: 20px 28px 28px; gap: 16px; grid-template-columns: repeat(12, 1fr); }
+  .page.active { display: grid; animation: fadein .25s ease-out; }
+  @keyframes fadein { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; min-width: 0; }
+  .card-title {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+    font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .12em; margin-bottom: 14px;
+  }
+  .card-title .hint { font-weight: 400; text-transform: none; letter-spacing: 0; font-family: var(--mono); color: var(--dim); }
+  .s12 { grid-column: span 12; } .s8 { grid-column: span 8; } .s7 { grid-column: span 7; } .s6 { grid-column: span 6; }
+  .s5 { grid-column: span 5; } .s4 { grid-column: span 4; } .s3 { grid-column: span 3; }
+  .text { font-size: 13px; color: var(--muted); line-height: 1.7; }
+  .text b { color: var(--text); font-weight: 600; }
+  .text code, code { font-family: var(--mono); font-size: 12px; color: var(--accent); background: var(--bg-2); padding: 1px 5px; border-radius: 4px; }
+
+  /* KPIs */
+  .kpis { grid-column: span 12; display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; }
+  .kpi { position: relative; overflow: hidden; }
+  .kpi::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--c, var(--line-2)); }
+  .kpi-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .12em; font-weight: 600; }
+  .kpi-value { font-family: var(--mono); font-size: 26px; font-weight: 500; margin-top: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .kpi-sub { font-size: 12px; color: var(--dim); margin-top: 4px; font-family: var(--mono); }
+  .kpi.flash { animation: flash .9s ease-out; }
+  @keyframes flash { 0% { background: rgba(244,63,94,.18); } 100% { background: var(--panel); } }
+
+  /* LCD */
+  .lcd-wrap { display: flex; justify-content: center; padding: 6px 0 4px; }
+  .lcd-bezel { padding: 14px; border-radius: 8px; background: linear-gradient(#0f2a1b, #0b2015); border: 1px solid #1f3d2b; }
+  .lcd { display: grid; grid-template-columns: repeat(16, 1fr); gap: 3px; background: #1d4ed8; padding: 10px; border-radius: 3px; box-shadow: inset 0 0 18px rgba(0,0,40,.55); }
+  .cell { width: 22px; height: 34px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,.07); border-radius: 1px;
+          font-family: var(--mono); font-size: 22px; font-weight: 500; color: #eef4ff; text-shadow: 0 0 6px rgba(220,235,255,.45); }
+  .cell.block { background: #eef4ff; box-shadow: 0 0 6px rgba(220,235,255,.5); }
+  .cell svg { width: 17px; height: 27px; } .cell svg rect { fill: #eef4ff; }
+  .legend-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 16px; margin-top: 14px; font-size: 12px; color: var(--muted); }
+  .key { font-family: var(--mono); color: var(--text); background: var(--panel-2); border: 1px solid var(--line-2); border-radius: 4px; padding: 1px 6px; font-size: 11px; margin-right: 6px; }
+
+  /* Entradas fisicas */
+  .inputs { display: flex; gap: 24px; align-items: center; }
+  .pad { position: relative; width: 148px; height: 148px; border-radius: 50%; flex-shrink: 0; border: 1px solid var(--line-2);
+         background: radial-gradient(circle, rgba(45,212,191,.08) 0%, transparent 65%), var(--bg-2); }
+  .pad::before, .pad::after { content: ""; position: absolute; background: var(--line); }
+  .pad::before { left: 50%; top: 10px; bottom: 10px; width: 1px; } .pad::after { top: 50%; left: 10px; right: 10px; height: 1px; }
+  .deadzone { position: absolute; left: 50%; top: 50%; width: 52px; height: 52px; transform: translate(-50%,-50%); border-radius: 50%; border: 1px dashed var(--line-2); }
+  .stick { position: absolute; width: 22px; height: 22px; border-radius: 50%; left: 50%; top: 50%; transform: translate(-50%,-50%);
+           background: var(--accent); z-index: 2; box-shadow: 0 0 14px rgba(45,212,191,.55); transition: left .12s linear, top .12s linear; }
+  .readings { flex: 1; display: grid; gap: 10px; font-family: var(--mono); font-size: 12px; }
+  .reading { display: flex; justify-content: space-between; border-bottom: 1px solid var(--line); padding-bottom: 6px; color: var(--muted); }
+  .reading b { color: var(--text); font-weight: 500; }
+  .bar-mini { height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; margin-top: 4px; }
+  .bar-mini span { display: block; height: 100%; background: var(--accent-2); width: 50%; transition: width .12s linear; }
+  .btn-led { display: inline-flex; align-items: center; gap: 8px; }
+  .btn-led i { width: 12px; height: 12px; border-radius: 50%; background: var(--line-2); display: inline-block; }
+  .btn-led.on i { background: var(--ok); box-shadow: 0 0 10px var(--ok); }
+
+  /* Graficos */
+  .chart { display: flex; align-items: flex-end; gap: 6px; height: 170px; padding-top: 6px; border-bottom: 1px solid var(--line); }
+  .col { flex: 1; display: flex; flex-direction: column-reverse; height: 100%; position: relative; }
+  .col .seg { width: 100%; transition: height .3s; } .col .seg:last-child { border-radius: 3px 3px 0 0; }
+  .col:hover::after { content: attr(data-tip); position: absolute; bottom: calc(100% + 4px); left: 50%; transform: translateX(-50%);
+    background: var(--panel-2); border: 1px solid var(--line-2); padding: 3px 7px; border-radius: 4px; font-family: var(--mono); font-size: 11px; white-space: nowrap; z-index: 3; }
+  .chart-x { display: flex; gap: 6px; margin-top: 6px; font-family: var(--mono); font-size: 10px; color: var(--dim); }
+  .chart-x span { flex: 1; text-align: center; }
+  .sev-legend { display: flex; gap: 14px; font-size: 12px; color: var(--muted); text-transform: none; letter-spacing: 0; font-weight: 400; }
+  .sev-legend span::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 6px; background: var(--c); }
+  .dist { display: grid; gap: 10px; }
+  .dist-row { display: grid; grid-template-columns: 90px 1fr 40px; gap: 10px; align-items: center; font-size: 12px; color: var(--muted); }
+  .dist-track { height: 8px; background: var(--bg-2); border-radius: 4px; overflow: hidden; border: 1px solid var(--line); }
+  .dist-fill { height: 100%; width: 0; transition: width .4s; }
+  .dist-row b { font-family: var(--mono); color: var(--text); font-weight: 500; text-align: right; }
+
+  /* Tabelas */
+  .toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; text-transform: none; letter-spacing: 0; font-weight: 400; }
+  .chip { font-size: 12px; font-family: var(--mono); padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line-2); background: transparent; color: var(--dim); }
+  .chip.active { color: var(--c); border-color: var(--c); background: color-mix(in srgb, var(--c) 10%, transparent); }
+  .search, select.sel { background: var(--bg-2); border: 1px solid var(--line-2); color: var(--text); border-radius: 8px; padding: 6px 10px; font-size: 12px; font-family: var(--mono); outline: none; }
+  .search { width: 190px; } .search:focus, select.sel:focus { border-color: var(--accent); }
+  .table-wrap { max-height: 420px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  thead th { position: sticky; top: 0; background: var(--panel-2); text-align: left; font-weight: 600; color: var(--muted); text-transform: uppercase;
+             letter-spacing: .08em; font-size: 10px; padding: 9px 12px; border-bottom: 1px solid var(--line); z-index: 1; }
+  tbody td { padding: 8px 12px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  tbody tr { animation: rowin .4s ease-out; } tbody tr:hover { background: rgba(255,255,255,.02); }
+  tbody tr.clickable { cursor: pointer; }
+  @keyframes rowin { from { background: rgba(45,212,191,.12); } to { background: transparent; } }
+  .mono { font-family: var(--mono); } .muted { color: var(--muted); }
+  .badge { display: inline-block; font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: .08em; padding: 3px 8px; border-radius: 4px; text-transform: uppercase;
+           color: var(--c); background: color-mix(in srgb, var(--c) 14%, transparent); border: 1px solid color-mix(in srgb, var(--c) 35%, transparent); }
+  .cat { font-family: var(--mono); color: var(--accent); }
+  .empty { text-align: center; color: var(--dim); padding: 36px 0; font-size: 13px; }
+  .hash { font-family: var(--mono); font-size: 11px; color: #94a3b8; }
+  tr.bad td { background: rgba(244,63,94,.12); } tr.bad .hash { color: #fda4af; } tr.after td { opacity: .55; }
+
+  /* Mini lista de eventos */
+  .feed { display: grid; gap: 8px; }
+  .feed-item { display: grid; grid-template-columns: 8px 1fr auto; gap: 10px; align-items: center; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg-2); font-size: 12px; }
+  .feed-item i { width: 8px; height: 8px; border-radius: 50%; background: var(--c); }
+  .feed-item b { font-family: var(--mono); font-weight: 500; } .feed-item small { color: var(--dim); font-family: var(--mono); }
+  .feed-item span { color: var(--muted); display: block; margin-top: 2px; }
+
+  /* Incidentes */
+  .inc-grid { grid-column: span 12; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .inc { border-left: 3px solid var(--c); }
+  .inc .num { font-family: var(--mono); font-size: 30px; margin: 6px 0 2px; color: var(--c); }
+  .inc .what { font-size: 12px; color: var(--muted); }
+
+  /* Auditoria */
+  .audit-head { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+  .audit-status { font-family: var(--mono); font-weight: 700; font-size: 13px; letter-spacing: .1em; padding: 8px 14px; border-radius: 8px;
+    border: 1px solid var(--c, var(--line-2)); color: var(--c, var(--muted)); background: color-mix(in srgb, var(--c, transparent) 10%, transparent); }
+  .stats { display: flex; gap: 22px; flex: 1; flex-wrap: wrap; font-family: var(--mono); font-size: 12px; color: var(--muted); min-width: 300px; }
+  .stats b { display: block; color: var(--text); font-size: 16px; font-weight: 500; margin-top: 2px; }
+
+  /* Laboratorio de forca bruta */
+  .lab-form { display: grid; gap: 14px; }
+  .field label { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+  .field label b { font-family: var(--mono); color: var(--text); font-weight: 500; }
+  input[type=range] { width: 100%; accent-color: var(--accent); }
+  .scen { display: grid; gap: 14px; }
+  .scen-row { display: grid; grid-template-columns: 210px 1fr 150px; gap: 14px; align-items: center; }
+  .scen-name { font-size: 13px; font-weight: 500; } .scen-name small { display: block; color: var(--dim); font-size: 11px; font-weight: 400; margin-top: 2px; }
+  .scen-track { height: 22px; background: var(--bg-2); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+  .scen-fill { height: 100%; background: var(--c); width: 0; transition: width .5s; border-radius: 5px; }
+  .scen-time { font-family: var(--mono); font-size: 14px; text-align: right; color: var(--c); }
+  .growth { width: 100%; height: 260px; }
+  .formula { font-family: var(--mono); font-size: 13px; background: var(--bg-2); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; line-height: 1.9; color: var(--muted); }
+  .formula b { color: var(--accent); font-weight: 500; }
+  .sim-box { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 12px 0; }
+  .sim-box div { background: var(--bg-2); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font-size: 11px; color: var(--muted); font-family: var(--mono); }
+  .sim-box b { display: block; font-size: 18px; color: var(--text); font-weight: 500; margin-top: 4px; }
+  .sim-log { font-family: var(--mono); font-size: 11.5px; background: #03060a; border: 1px solid var(--line); border-radius: 8px; height: 170px; overflow: auto; padding: 8px 12px; color: #8fa3b8; line-height: 1.6; }
+  .sim-log .l { color: var(--critico); } .sim-log .a { color: var(--alerta); } .sim-log .k { color: var(--ok); }
+
+  /* Modulos, pinos, console */
+  .modules { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .module { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg-2); font-size: 13px; }
+  .module small { display: block; color: var(--dim); font-size: 11px; font-family: var(--mono); margin-top: 2px; }
+  .status-tag { font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--c, var(--dim)); text-align: right; }
+  .console { background: #03060a; border: 1px solid var(--line); border-radius: 8px; height: 320px; overflow: auto; font-family: var(--mono); font-size: 11.5px; line-height: 1.6; padding: 10px 12px; color: #8fa3b8; }
+  .console .json { color: #7dd3c0; } .console .dbg { color: #64748b; } .console .tx { color: #fbbf24; }
+
+  /* Sobre */
+  .layers { display: grid; gap: 8px; }
+  .layer { display: grid; grid-template-columns: 150px 1fr; gap: 12px; align-items: center; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg-2); }
+  .layer b { font-size: 12px; color: var(--c); text-transform: uppercase; letter-spacing: .1em; }
+  .layer span { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+  .team { display: grid; gap: 8px; }
+  .member { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg-2); }
+  .avatar { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-family: var(--mono); font-weight: 700; background: rgba(45,212,191,.12); color: var(--accent); border: 1px solid rgba(45,212,191,.3); }
+
+  .toasts { position: fixed; right: 20px; bottom: 20px; display: grid; gap: 10px; z-index: 50; }
+  .toast { min-width: 280px; max-width: 360px; background: var(--panel-2); border: 1px solid var(--c); border-left: 4px solid var(--c); border-radius: 8px; padding: 12px 14px; font-size: 13px; box-shadow: 0 10px 30px rgba(0,0,0,.45); animation: toastin .3s ease-out; }
+  .toast b { display: block; font-family: var(--mono); color: var(--c); font-size: 11px; letter-spacing: .1em; margin-bottom: 4px; }
+  @keyframes toastin { from { transform: translateY(10px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+  @media (max-width: 1200px) { .kpis { grid-template-columns: repeat(3, 1fr); } .inc-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 1000px) {
+    .app { grid-template-columns: 1fr; }
+    aside { position: static; height: auto; flex-direction: row; flex-wrap: wrap; align-items: center; padding: 10px 14px; }
+    .brand { padding: 4px 8px; } nav { display: flex; flex-wrap: wrap; gap: 4px; } .nav-label, .side-foot { display: none; }
+    .nav-btn { width: auto; padding: 7px 10px; }
+    .s8, .s7, .s6, .s5, .s4, .s3 { grid-column: span 12; }
+    .scen-row { grid-template-columns: 1fr; gap: 6px; } .scen-time { text-align: left; }
+  }
+  @media (max-width: 640px) {
+    header { flex-wrap: wrap; padding: 12px 16px; } .page { padding: 16px; } .banner { margin: 12px 16px 0; }
+    .kpis, .inc-grid { grid-template-columns: repeat(2, 1fr); }
+    .cell { width: 15px; height: 24px; font-size: 15px; } .cell svg { width: 12px; height: 19px; }
+    .inputs { flex-direction: column; } .modules { grid-template-columns: 1fr; } .meta { display: none; } .sim-box { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ===================== MENU LATERAL ===================== -->
+<aside>
+  <div class="brand">
+    <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
+      <path d="M16 2.5 4.5 7v8.2c0 7.1 4.9 12.4 11.5 14.3 6.6-1.9 11.5-7.2 11.5-14.3V7L16 2.5Z" stroke="#2dd4bf" stroke-width="1.6"/>
+      <path d="M16 8.5v15M10.5 13h11" stroke="#2dd4bf" stroke-width="1.2" opacity=".55"/>
+      <circle cx="16" cy="13" r="2.6" fill="#2dd4bf"/>
+    </svg>
+    <div><div class="brand-name">SENTINEL</div><div class="brand-sub">Security Ops Console</div></div>
+  </div>
+  <nav id="nav">
+    <div class="nav-label">Monitoramento</div>
+    <button class="nav-btn active" data-page="overview"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>Visão geral</button>
+    <button class="nav-btn" data-page="events"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Eventos</button>
+    <button class="nav-btn" data-page="incidents"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3 2 20h20L12 3Z"/><path d="M12 10v4M12 17v.5"/></svg>Incidentes<span class="count" id="incCount">0</span></button>
+    <div class="nav-label">Segurança</div>
+    <button class="nav-btn" data-page="users"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18.5 14.8c1.6.8 2.7 2.6 3 5.2"/></svg>Usuários e RFID</button>
+    <button class="nav-btn" data-page="audit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 7H6a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2v-3"/><path d="M14 4h6v6M20 4l-9 9"/></svg>Auditoria</button>
+    <button class="nav-btn" data-page="lab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3h6M10 3v6L4.5 19a1.5 1.5 0 0 0 1.3 2h12.4a1.5 1.5 0 0 0 1.3-2L14 9V3"/><path d="M7 15h10"/></svg>Lab. força bruta</button>
+    <div class="nav-label">Sistema</div>
+    <button class="nav-btn" data-page="hardware"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="6" width="12" height="12" rx="1"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/></svg>Hardware</button>
+    <button class="nav-btn" data-page="about"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8v.5"/></svg>Sobre o projeto</button>
+  </nav>
+  <div class="side-foot">SENTINEL v0.6<br>Algoritmo e Estrutura<br>de Dados · CESAR School</div>
+</aside>
+
+<div class="main">
+<header>
+  <div><div class="page-title" id="pageTitle">Visão geral</div><div class="page-sub" id="pageSub">Estado do sistema em tempo real</div></div>
+  <div class="spacer"></div>
+  <span class="pill" id="linkPill"><span class="dot"></span><span id="linkText">DESCONECTADO</span></span>
+  <div class="meta" id="meta">firmware —<br>chip —</div>
+  <button class="btn" id="btnDemo" title="Gera dados simulados para testar o painel sem a placa">Modo demo</button>
+  <button class="btn primary" id="btnConnect">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 7V3M15 7V3M7 7h10v5a5 5 0 0 1-10 0V7ZM12 17v4"/></svg>
+    <span id="btnConnectText">Conectar ESP32</span>
+  </button>
+</header>
+
+<div class="banner warn" id="bannerSupport">Este navegador não tem Web Serial. Abra este arquivo no <b>Google Chrome</b> ou no <b>Microsoft Edge</b> (no computador). O modo demo funciona em qualquer navegador.</div>
+<div class="banner lock" id="bannerLock">■ SISTEMA BLOQUEADO POR SUSPEITA DE FORÇA BRUTA · libera em <b id="lockLeft">--:--</b> · nível <b id="lockLvl">-</b></div>
+<div class="banner demo" id="bannerDemo"><b>MODO DEMONSTRAÇÃO:</b> os dados abaixo são simulados pelo próprio painel. Nada aqui veio da placa.</div>
+
+<!-- ===================== VISAO GERAL ===================== -->
+<section class="page active" id="page-overview">
+  <div class="kpis">
+    <div class="card kpi" style="--c: var(--accent)"><div class="kpi-label">Estado do sistema</div><div class="kpi-value" id="kState">—</div><div class="kpi-sub" id="kStateSub">aguardando conexão</div></div>
+    <div class="card kpi"><div class="kpi-label">Tempo ligado</div><div class="kpi-value" id="kUptime">--:--:--</div><div class="kpi-sub" id="kBoot">boot nº —</div></div>
+    <div class="card kpi" style="--c: var(--ok)"><div class="kpi-label">Acessos liberados</div><div class="kpi-value" id="kOk">0</div><div class="kpi-sub" id="kOkSub">nesta sessão</div></div>
+    <div class="card kpi" style="--c: var(--aviso)"><div class="kpi-label">Acessos negados</div><div class="kpi-value" id="kDenied">0</div><div class="kpi-sub" id="kDeniedSub">falhas seguidas: —</div></div>
+    <div class="card kpi" id="kAlertsCard" style="--c: var(--critico)"><div class="kpi-label">Alertas</div><div class="kpi-value" id="kAlerts">0</div><div class="kpi-sub" id="kLocks">bloqueios: —</div></div>
+  </div>
+
+  <div class="card s5">
+    <div class="card-title">Espelho do LCD <span class="hint">16×2 · I2C</span></div>
+    <div class="lcd-wrap"><div class="lcd-bezel"><div class="lcd" id="lcd"></div></div></div>
+    <div class="legend-controls">
+      <div><span class="key">▲▼</span>navegar / mudar dígito</div><div><span class="key">◀</span>apagar / voltar</div>
+      <div><span class="key">OK</span>confirmar (aperto curto)</div><div><span class="key">OK…</span>cancelar (segurar)</div>
+    </div>
+  </div>
+  <div class="card s7">
+    <div class="card-title">Entradas físicas <span class="hint">leitura ao vivo a cada 1 s</span></div>
+    <div class="inputs">
+      <div class="pad"><div class="deadzone"></div><div class="stick" id="stick"></div></div>
+      <div class="readings">
+        <div><div class="reading"><span>Eixo X · GPIO 34</span><b id="rX">—</b></div><div class="bar-mini"><span id="bX"></span></div></div>
+        <div><div class="reading"><span>Eixo Y · GPIO 35</span><b id="rY">—</b></div><div class="bar-mini"><span id="bY"></span></div></div>
+        <div class="reading"><span>Direção</span><b id="rDir">—</b></div>
+        <div class="reading"><span>Botão · GPIO 25</span><b class="btn-led" id="rBtn"><i></i><span>solto</span></b></div>
+        <div class="reading"><span>Leitor RFID · SPI</span><b id="rRfid">—</b></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card s8">
+    <div class="card-title">Atividade · eventos por minuto
+      <div class="sev-legend"><span style="--c: var(--info)">Info</span><span style="--c: var(--aviso)">Aviso</span><span style="--c: var(--alerta)">Alerta</span><span style="--c: var(--critico)">Crítico</span></div>
+    </div>
+    <div class="chart" id="chart"></div><div class="chart-x" id="chartX"></div>
+  </div>
+  <div class="card s4">
+    <div class="card-title">Últimos eventos <button class="btn small" data-go="events">ver todos</button></div>
+    <div class="feed" id="feed"><div class="empty">Nenhum evento ainda.</div></div>
+  </div>
+</section>
+
+<!-- ===================== EVENTOS ===================== -->
+<section class="page" id="page-events">
+  <div class="card s8">
+    <div class="card-title">Linha do tempo de eventos
+      <div class="toolbar">
+        <button class="chip active" data-sev="info" style="--c: var(--info)">info</button>
+        <button class="chip active" data-sev="aviso" style="--c: var(--aviso)">aviso</button>
+        <button class="chip active" data-sev="alerta" style="--c: var(--alerta)">alerta</button>
+        <button class="chip active" data-sev="critico" style="--c: var(--critico)">crítico</button>
+      </div>
+    </div>
+    <div class="toolbar" style="margin-bottom: 12px">
+      <select class="sel" id="fCat"><option value="">todas as categorias</option></select>
+      <select class="sel" id="fUser"><option value="">todos os usuários</option></select>
+      <input class="search" id="search" placeholder="buscar evento…" maxlength="40">
+      <div class="spacer"></div>
+      <button class="btn small" id="btnCsv">Exportar CSV</button>
+      <button class="btn small" id="btnClear">Limpar</button>
+    </div>
+    <div class="table-wrap">
+      <table><thead><tr><th>Aud. #</th><th>Hora (PC)</th><th>Uptime</th><th>Categoria</th><th>Evento</th><th>Usuário</th><th>Severidade</th><th>Descrição</th><th>Hash</th></tr></thead><tbody id="tbody"></tbody></table>
+      <div class="empty" id="empty">Nenhum evento. Conecte a ESP32 ou ative o modo demo.</div>
+    </div>
+  </div>
+  <div class="card s4">
+    <div class="card-title">Distribuição por severidade</div>
+    <div class="dist" id="dist"></div>
+    <div class="card-title" style="margin-top: 24px">Por categoria</div>
+    <div class="dist" id="distCat"></div>
+  </div>
+</section>
+
+<!-- ===================== INCIDENTES ===================== -->
+<section class="page" id="page-incidents">
+  <div class="inc-grid" id="incGrid"></div>
+  <div class="card s12">
+    <div class="card-title">Incidentes (alerta + crítico) <span class="hint">o que um analista de SOC precisa olhar primeiro</span></div>
+    <div class="table-wrap">
+      <table><thead><tr><th>Hora</th><th>Tipo de incidente</th><th>Evento</th><th>Usuário</th><th>Severidade</th><th>Descrição</th></tr></thead><tbody id="incBody"></tbody></table>
+      <div class="empty" id="incEmpty">Nenhum incidente. Tudo tranquilo por aqui.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== USUARIOS ===================== -->
+<section class="page" id="page-users">
+  <div class="card s8">
+    <div class="card-title">Usuários cadastrados <span class="hint">vetor de structs na ESP32 (MAX_USUARIOS = 4)</span>
+      <button class="btn small" id="btnUsers" disabled>Atualizar lista</button>
+    </div>
+    <div class="table-wrap">
+      <table><thead><tr><th>#</th><th>Nome</th><th>Perfil</th><th>Situação</th><th>PIN</th><th>Crachá (id protegido)</th><th>Fatores</th><th>Acessos</th></tr></thead><tbody id="userBody"></tbody></table>
+      <div class="empty" id="userEmpty">Clique em “Atualizar lista” com a placa conectada.</div>
+    </div>
+    <p class="text" style="margin-top: 12px">Clique num usuário para ver o histórico dele. O cadastro e a revogação são feitos <b>no próprio LCD</b>, no menu <b>Usuarios</b> (protegido pela senha do Admin). O painel é <b>só leitura</b>.</p>
+  </div>
+  <div class="card s4">
+    <div class="card-title">Leitor RFID</div>
+    <div class="stats" style="flex-direction: column; gap: 12px">
+      <div>situação<b id="uRfid">—</b></div><div>versão do chip<b id="uRfv">—</b></div><div>usuários com PIN<b id="uPins">—</b></div>
+    </div>
+    <p class="text" style="margin-top: 14px">O UID do crachá <b>nunca</b> sai da placa: o sistema guarda e mostra só o <code>HMAC(chave, UID)</code>. O UID não é segredo e pode ser copiado; por isso o crachá é só o 1º fator e o PIN é sempre exigido.</p>
+  </div>
+  <div class="card s12">
+    <div class="card-title">Histórico do usuário <span class="hint" id="uHistName">selecione um usuário</span></div>
+    <div class="feed" id="uFeed"><div class="empty">—</div></div>
+  </div>
+</section>
+
+<!-- ===================== AUDITORIA ===================== -->
+<section class="page" id="page-audit">
+  <div class="card s12">
+    <div class="card-title">Auditoria criptográfica <span class="hint">corrente de hashes HMAC-SHA256 guardada na ESP32</span></div>
+    <div class="audit-head">
+      <span class="audit-status" id="auditStatus">NÃO VERIFICADA</span>
+      <div class="stats">
+        <div>registros<b id="aRecs">—</b></div><div>último id<b id="aLast">—</b></div><div>âncora<b id="aAnchor">—</b></div><div>época<b id="aEpoch">—</b></div>
+      </div>
+      <button class="btn small" id="btnVerify" disabled>Verificar corrente</button>
+      <button class="btn small" id="btnRecs" disabled>Carregar registros</button>
+    </div>
+    <div class="table-wrap" style="max-height: 380px">
+      <table><thead><tr><th>#</th><th>Boot · uptime</th><th>Categoria</th><th>Evento</th><th>Severidade</th><th>Usuário</th><th>Hash anterior</th><th>Hash deste registro</th></tr></thead><tbody id="recBody"></tbody></table>
+      <div class="empty" id="recEmpty">Clique em “Carregar registros” para ver os últimos 25 registros da corrente.</div>
+    </div>
+  </div>
+  <div class="card s6">
+    <div class="card-title">Como a corrente funciona</div>
+    <div class="formula">hash<sub>n</sub> = <b>HMAC-SHA256</b>(chave, dados<sub>n</sub> ‖ hash<sub>n-1</sub>)<br>hash<sub>0</sub> = 000…000 (64 zeros)</div>
+    <p class="text" style="margin-top: 12px">O “hash anterior” de cada linha é igual ao “hash” da linha de baixo. Alterar um registro antigo quebra o HMAC dele; apagar uma linha quebra a sequência de ids. Sem a chave (que fica na placa), o invasor não consegue recalcular a corrente.</p>
+  </div>
+  <div class="card s6">
+    <div class="card-title">Limitações (documentadas)</div>
+    <p class="text">• Apagar o arquivo inteiro só é percebido pela <b>época</b> e por cópias externas (<b>checkpoints</b>, melhoria futura).<br>• A chave fica na mesma flash: quem copiar a memória inteira pode recalcular a corrente (defesa: Flash Encryption).<br>• Para demonstrar: no LCD, <b>Auditoria → Sim. ataque</b> e depois <b>Verificar</b>.</p>
+  </div>
+</section>
+
+<!-- ===================== LABORATORIO ===================== -->
+<section class="page" id="page-lab">
+  <div class="card s4">
+    <div class="card-title">Parâmetros do ataque</div>
+    <div class="lab-form">
+      <div class="field"><label>Dígitos do PIN <b id="lDigitsV">4</b></label><input type="range" id="lDigits" min="3" max="8" value="4"></div>
+      <div class="field"><label>Tentativa sem proteção (ms) <b id="lRawV">10</b></label><input type="range" id="lRaw" min="1" max="1000" value="10"></div>
+      <div class="field"><label>PBKDF2 por tentativa (ms) <b id="lKdfV">800</b></label><input type="range" id="lKdf" min="50" max="3000" step="10" value="800"></div>
+      <div class="field"><label>Bloqueia a cada N erros <b id="lLockNV">5</b></label><input type="range" id="lLockN" min="2" max="20" value="5"></div>
+      <div class="field"><label>1º bloqueio (s) · máximo (s) <b id="lLockV">30 · 900</b></label><input type="range" id="lLockBase" min="5" max="300" value="30"></div>
+      <label class="text" style="display: flex; gap: 8px; align-items: center"><input type="checkbox" id="lUseBoard" checked> usar o tempo de PBKDF2 medido na placa</label>
+    </div>
+  </div>
+  <div class="card s8">
+    <div class="card-title">Tempo para testar metade das combinações (caso médio) <span class="hint" id="lCombos">10.000 combinações</span></div>
+    <div class="scen" id="scen"></div>
+    <div class="formula" style="margin-top: 16px">
+      combinações = 10<sup>n</sup> &nbsp;→&nbsp; busca exaustiva é <b>O(10<sup>n</sup>)</b><br>
+      tempo médio = (10<sup>n</sup> / 2) × custo_por_tentativa + Σ bloqueios<br>
+      bloqueio<sub>k</sub> = min(base × 2<sup>k</sup>, máximo)
+    </div>
+  </div>
+  <div class="card s7">
+    <div class="card-title">Crescimento exponencial (escala logarítmica)
+      <div class="sev-legend"><span style="--c: var(--critico)">sem proteção</span><span style="--c: var(--alerta)">PBKDF2</span><span style="--c: var(--ok)">PBKDF2 + bloqueio</span><span style="--c: var(--accent-2)">offline</span></div>
+    </div>
+    <svg class="growth" id="growth" viewBox="0 0 640 260" preserveAspectRatio="none"></svg>
+  </div>
+  <div class="card s5">
+    <div class="card-title">Simulação de ataque online <button class="btn small" id="btnSim">Simular 40 tentativas</button></div>
+    <div class="sim-box"><div>tentativas<b id="simN">0</b></div><div>bloqueios<b id="simL">0</b></div><div>tempo gasto<b id="simT">0 s</b></div><div>chance de acerto<b id="simP">0%</b></div></div>
+    <div class="sim-log" id="simLog"><div>Usa as mesmas regras do firmware (alerta na 3ª, bloqueio na 5ª, tempo ×2).</div></div>
+  </div>
+</section>
+
+<!-- ===================== HARDWARE ===================== -->
+<section class="page" id="page-hardware">
+  <div class="card s6">
+    <div class="card-title">Módulos do sistema</div>
+    <div class="modules" id="modules"></div>
+  </div>
+  <div class="card s6">
+    <div class="card-title">Mapa de pinos (GPIO) <span class="hint">config.h</span></div>
+    <div class="table-wrap" style="max-height: none">
+      <table><thead><tr><th>Componente</th><th>Sinal</th><th>GPIO</th><th>Observação</th></tr></thead><tbody id="pinBody"></tbody></table>
+    </div>
+  </div>
+  <div class="card s12">
+    <div class="card-title">Console serial <span class="hint">115200 baud · linhas JSON = protocolo do painel</span></div>
+    <div class="console" id="console"></div>
+  </div>
+</section>
+
+<!-- ===================== SOBRE ===================== -->
+<section class="page" id="page-about">
+  <div class="card s7">
+    <div class="card-title">O que é o SENTINEL</div>
+    <p class="text"><b>Smart Embedded Network Threat and Intrusion Logging System</b>: um controle de acesso com ESP32 que une segurança física (crachá RFID + PIN) e segurança digital (detecção de força bruta, bloqueio progressivo e auditoria criptográfica), monitorado por este painel no estilo SOC (Security Operations Center).</p>
+    <div class="card-title" style="margin-top: 20px">Arquitetura em camadas</div>
+    <div class="layers">
+      <div class="layer" style="--c: var(--accent-2)"><b>Comunicação</b><span>telemetry_manager → painel via USB (Web Serial, JSON por linha)</span></div>
+      <div class="layer" style="--c: var(--critico)"><b>Segurança</b><span>security_engine (IDS) · crypto_manager (PBKDF2, HMAC) · event_logger (auditoria)</span></div>
+      <div class="layer" style="--c: var(--ok)"><b>Regras</b><span>máquina de estados · authentication · user_manager · historico</span></div>
+      <div class="layer" style="--c: var(--aviso)"><b>Hardware</b><span>display_manager (LCD) · input_manager (joystick/botão) · rfid_manager (RC522)</span></div>
+    </div>
+  </div>
+  <div class="card s5">
+    <div class="card-title">Equipe</div>
+    <div class="team">
+      <div class="member"><div class="avatar">VB</div><div>Vinicius Britto</div></div>
+      <div class="member"><div class="avatar">PV</div><div>Petrus Vieira</div></div>
+      <div class="member"><div class="avatar">MC</div><div>Miguel Cavalcanti</div></div>
+    </div>
+    <div class="card-title" style="margin-top: 20px">Estruturas de dados e algoritmos usados</div>
+    <p class="text">
+      • <b>Máquina de estados</b> (enum + switch) controla todas as telas.<br>
+      • <b>Vetor de structs</b> para os usuários, com <b>busca linear O(n)</b> pelo crachá.<br>
+      • <b>Fila circular</b> com os últimos 10 eventos (inserção O(1)).<br>
+      • <b>Lista encadeada por hash</b>: cada registro da auditoria aponta para o anterior.<br>
+      • <b>Busca exaustiva O(10ⁿ)</b>: análise de força bruta no laboratório.
+    </p>
+  </div>
+</section>
+
+<footer style="padding: 0 28px 24px; font-size: 11px; color: var(--dim); font-family: var(--mono); display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+  <span>SENTINEL v0.6 · painel local via Web Serial (USB) · nenhuma senha trafega pelo cabo</span><span id="clock"></span>
+</footer>
+</div>
+</div>
+<div class="toasts" id="toasts"></div>
+
+<script>
+// =============================================================
+// SENTINEL - painel do computador
+// Conversa com a ESP32 pelo cabo USB usando a Web Serial API.
+// Protocolo: 1 mensagem JSON por linha (ver docs/05_painel_pc.md).
+// Todo texto vindo da placa e inserido com textContent (nunca como HTML).
+// =============================================================
+const app = {
+  port: null, reader: null, writer: null, connected: false, demo: false,
+  lastHb: 0, lastHbMsg: null, events: [], counts: { info: 0, aviso: 0, alerta: 0, critico: 0 },
+  filters: new Set(["info", "aviso", "alerta", "critico"]), users: [], pingTimer: null, demoTimer: null,
+  ok: 0, denied: 0, kdf: 0, selectedUser: ""
+};
+const $ = (id) => document.getElementById(id);
+const SEV_COLOR = { info: "var(--info)", aviso: "var(--aviso)", alerta: "var(--alerta)", critico: "var(--critico)" };
+const SEV_LABEL = { info: "info", aviso: "aviso", alerta: "alerta", critico: "crítico" };
+const STATE_LABEL = {
+  INICIO: ["Iniciando", "animação de boot"], PRIMEIRO_USO: ["Primeiro uso", "cadastro da senha do Admin"],
+  OCIOSO: ["Aguardando", "crachá ou OK"], MENU: ["Menu", "usuário navegando"], ESCOLHER_USUARIO: ["Entrar", "escolhendo usuário"],
+  AGUARDAR_CARTAO: ["Crachá", "aguardando o crachá"], SENHA: ["Autenticando", "digitação de senha"],
+  RESULTADO: ["Resultado", "exibindo resposta"], BLOQUEADO: ["BLOQUEADO", "força bruta detectada"],
+  HISTORICO: ["Histórico", "fila circular no LCD"], USUARIOS: ["Admin", "gestão de usuários"], USUARIO_ACOES: ["Admin", "editando usuário"],
+  AUDITORIA: ["Auditoria", "menu de auditoria"], STATUS: ["Status", "diagnóstico"], ALERTAS: ["Teste alertas", "simulação de avisos"], SOBRE: ["Sobre", "informações"]
+};
+const PAGES = {
+  overview: ["Visão geral", "Estado do sistema em tempo real"], events: ["Eventos", "Tudo o que aconteceu, com filtros"],
+  incidents: ["Central de incidentes", "Alertas e eventos críticos agrupados"], users: ["Usuários e RFID", "Credenciais cadastradas e fatores de autenticação"],
+  audit: ["Auditoria criptográfica", "Integridade dos registros"], lab: ["Laboratório de força bruta", "Análise de complexidade: quanto tempo um atacante levaria"],
+  hardware: ["Hardware", "Módulos, pinos e comunicação serial"], about: ["Sobre o projeto", "Arquitetura, equipe e conceitos"]
+};
+const ICONS = { 1: [0,1,3,22,28,8,0,0], 2: [0,17,10,4,10,17,0,0], 3: [4,14,14,14,4,0,4,0], 4: [14,17,17,31,27,27,31,0],
+                5: [14,16,16,31,27,27,31,0], 6: [31,17,21,21,17,10,4,0], 7: [0,14,21,23,17,14,0,0] };
+const pad2 = (n) => String(n).padStart(2, "0");
+const fmtUptime = (s) => { s = Number(s) || 0; return `${pad2(Math.floor(s / 3600))}:${pad2(Math.floor((s % 3600) / 60))}:${pad2(s % 60)}`; };
+const fmtTime = (d) => `${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`;
+function td(text, cls) { const c = document.createElement("td"); if (cls) c.className = cls; c.textContent = text; return c; }
+function badge(sev) { const b = document.createElement("span"); b.className = "badge"; b.style.setProperty("--c", SEV_COLOR[sev] || "var(--info)"); b.textContent = SEV_LABEL[sev] || sev; return b; }
+function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; }
+
+// ---------- Navegacao entre paginas ----------
+function goPage(p) {
+  document.querySelectorAll(".page").forEach((s) => s.classList.toggle("active", s.id === "page-" + p));
+  document.querySelectorAll(".nav-btn").forEach((b) => b.classList.toggle("active", b.dataset.page === p));
+  $("pageTitle").textContent = PAGES[p][0]; $("pageSub").textContent = PAGES[p][1];
+  if (p === "lab") renderLab();
+  try { localStorage.setItem("sentinel_page", p); } catch (e) {}
+}
+document.querySelectorAll(".nav-btn").forEach((b) => (b.onclick = () => goPage(b.dataset.page)));
+document.querySelectorAll("[data-go]").forEach((b) => (b.onclick = () => goPage(b.dataset.go)));
+
+// ---------- LCD ----------
+const lcdCells = [];
+for (let i = 0; i < 32; i++) { const c = el("div", "cell"); $("lcd").appendChild(c); lcdCells.push(c); }
+function iconSvg(rows) {
+  let r = ""; rows.forEach((row, y) => { for (let x = 0; x < 5; x++) if (row & (1 << (4 - x))) r += `<rect x="${x}" y="${y}" width="0.86" height="0.86"/>`; });
+  return `<svg viewBox="0 0 5 8">${r}</svg>`;
+}
+function renderLcd(l1, l2) {
+  const t = (l1 || "").padEnd(16).slice(0, 16) + (l2 || "").padEnd(16).slice(0, 16);
+  for (let i = 0; i < 32; i++) {
+    const ch = t[i], code = ch.charCodeAt(0), cell = lcdCells[i];
+    cell.classList.remove("block");
+    if (code >= 1 && code <= 7) cell.innerHTML = iconSvg(ICONS[code]);   // desenho fixo, nao vem da placa
+    else if (ch === "█") { cell.textContent = ""; cell.classList.add("block"); }
+    else cell.textContent = ch === " " ? "" : ch;
+  }
+}
+renderLcd("", "");
+
+// ---------- Console ----------
+function logConsole(line, kind) {
+  const c = $("console"); c.appendChild(el("div", kind || "", line));
+  while (c.childNodes.length > 300) c.removeChild(c.firstChild);
+  c.scrollTop = c.scrollHeight;
+}
+
+function setLink(kind, text) { $("linkPill").className = "pill " + kind; $("linkText").textContent = text; }
+
+// ---------- Mensagens da ESP32 ----------
+function handleLine(line) {
+  line = line.trim(); if (!line) return;
+  if (line[0] !== "{") { logConsole(line, "dbg"); return; }
+  logConsole(line, "json");
+  let m; try { m = JSON.parse(line); } catch (e) { logConsole("# linha JSON inválida ignorada", "dbg"); return; }
+  handleMsg(m);
+}
+function handleMsg(m) {
+  switch (m.t) {
+    case "boot": $("meta").textContent = ""; $("meta").append(`firmware v${m.v}`, document.createElement("br"), `chip ${m.chip}`); break;
+    case "state": setState(m.s); break;
+    case "hb": onHeartbeat(m); break;
+    case "lcd": renderLcd(m.l1, m.l2); break;
+    case "evt": addEvent(m); break;
+    case "audit": showAudit(m); break;
+    case "recbegin": $("recBody").innerHTML = ""; $("recEmpty").style.display = m.n ? "none" : "block"; if (!m.n) $("recEmpty").textContent = "A corrente está vazia."; break;
+    case "rec": addRecord(m); break;
+    case "user": addUser(m); break;
+  }
+}
+function setState(s) { const l = STATE_LABEL[s] || [s, ""]; $("kState").textContent = l[0]; $("kStateSub").textContent = l[1]; }
+
+function onHeartbeat(m) {
+  app.lastHb = Date.now(); app.lastHbMsg = m;
+  $("kUptime").textContent = fmtUptime(m.up); $("kBoot").textContent = "boot nº " + m.boot;
+  if (m.state) setState(m.state);
+  updateInputs(m.jx, m.jy, m.btn);
+  $("kDeniedSub").textContent = `falhas seguidas: ${m.fails} · restam ${m.left}`;
+  $("kLocks").textContent = `bloqueios: ${m.locks}`;
+  const locked = m.lock > 0;
+  $("bannerLock").classList.toggle("show", locked);
+  if (locked) { $("lockLeft").textContent = `${pad2(Math.floor(m.lock / 60))}:${pad2(m.lock % 60)}`; $("lockLvl").textContent = m.lvl; $("kState").textContent = "BLOQUEADO"; $("kStateSub").textContent = "libera em " + $("lockLeft").textContent; }
+  $("rRfid").textContent = m.rfid ? `ok · 0x${Number(m.rfv).toString(16)}` : "não detectado";
+  $("uRfid").textContent = m.rfid ? "conectado" : "não detectado"; $("uRfv").textContent = m.rfid ? "0x" + Number(m.rfv).toString(16) : "—";
+  if (m.kdf > 0) { app.kdf = m.kdf; if ($("lUseBoard").checked && $("page-lab").classList.contains("active")) renderLab(); }
+  $("aRecs").textContent = m.recs; $("aLast").textContent = "#" + m.last; $("aEpoch").textContent = m.epoch;
+  setModule("esp", "ok"); setModule("lcd", m.lcd ? "ok" : "fail"); setModule("joy", "ok"); setModule("btn", "ok");
+  setModule("usb", m.pc ? "ok" : "wait"); setModule("rfid", m.rfid ? "ok" : "wait");
+  setModule("auth", m.pin ? "ok" : "wait"); setModule("ids", locked ? "locked" : "ok"); setModule("audit", "ok");
+  setModuleSub("ids", `falhas ${m.fails} · restam ${m.left} · bloqueios ${m.locks}`);
+  setModuleSub("audit", `${m.recs} registros · época ${m.epoch}`);
+  setModuleSub("rfid", m.rfid ? `RC522 0x${Number(m.rfv).toString(16)} · SPI` : "SPI · 18/19/23/26/27");
+  setModuleSub("auth", `PBKDF2 · ${m.kdf || "—"} ms por verificação`);
+  if (app.connected) setLink("on", "ONLINE");
+}
+
+function updateInputs(jx, jy, btn) {
+  const nx = Math.max(-1, Math.min(1, (jx - 2048) / 2048)), ny = Math.max(-1, Math.min(1, (jy - 2048) / 2048));
+  $("stick").style.left = `calc(50% + ${nx * 58}px)`; $("stick").style.top = `calc(50% + ${ny * 58}px)`;
+  $("rX").textContent = jx; $("rY").textContent = jy; $("bX").style.width = (jx / 4095 * 100) + "%"; $("bY").style.width = (jy / 4095 * 100) + "%";
+  let d = "centro"; if (jy < 1000) d = "cima"; else if (jy > 3000) d = "baixo"; else if (jx < 1000) d = "esquerda"; else if (jx > 3000) d = "direita";
+  $("rDir").textContent = d; $("rBtn").classList.toggle("on", !!btn); $("rBtn").querySelector("span").textContent = btn ? "apertado" : "solto";
+}
+
+// ---------- Eventos ----------
+const INCIDENT_TYPES = {
+  forca: { name: "Força bruta", c: "var(--alerta)", types: ["POSSIVEL_FORCA_BRUTA"] },
+  bloqueio: { name: "Bloqueios", c: "var(--critico)", types: ["BLOQUEIO_ATIVADO", "TENTATIVA_DURANTE_BLOQUEIO", "REINICIO_DURANTE_BLOQUEIO"] },
+  cartao: { name: "Crachás suspeitos", c: "var(--aviso)", types: ["CARTAO_DESCONHECIDO", "CARTAO_REVOGADO", "CARTAO_NAO_CONFERE"] },
+  integridade: { name: "Integridade do log", c: "var(--critico)", types: ["AUDITORIA_VIOLADA", "SIMULACAO_ADULTERACAO"] },
+  comunicacao: { name: "Falhas de comunicação", c: "var(--accent-2)", types: ["RFID_FALHA_COMUNICACAO", "CMD_DESCONHECIDO", "CMD_EXCESSIVO", "CMD_GRANDE_DEMAIS", "PAINEL_DESCONECTADO", "LCD_AUSENTE"] },
+  autenticacao: { name: "Falhas de autenticação", c: "var(--aviso)", types: ["ACESSO_NEGADO", "ADMIN_NEGADO", "MFA_INDISPONIVEL"] }
+};
+function incidentKind(type) { for (const k in INCIDENT_TYPES) if (INCIDENT_TYPES[k].types.includes(type)) return k; return null; }
+
+function addEvent(m) {
+  const sev = SEV_COLOR[m.sev] ? m.sev : "info";
+  const ev = { aid: Number(m.id) || 0, time: new Date(), up: m.up ?? 0, cat: String(m.cat || "-"), type: String(m.type || "-"),
+               sev, msg: String(m.msg || ""), usr: String(m.usr || "-"), h: String(m.h || "") };
+  app.events.unshift(ev); if (app.events.length > 800) app.events.pop();
+  app.counts[sev]++;
+  if (ev.type === "ACESSO_LIBERADO") app.ok++;
+  if (["ACESSO_NEGADO", "CARTAO_DESCONHECIDO", "CARTAO_REVOGADO", "CARTAO_NAO_CONFERE", "ADMIN_NEGADO"].includes(ev.type)) app.denied++;
+  $("kOk").textContent = app.ok; $("kDenied").textContent = app.denied; $("kAlerts").textContent = app.counts.alerta + app.counts.critico;
+  if (sev === "alerta" || sev === "critico") { toast(ev); const c = $("kAlertsCard"); c.classList.remove("flash"); void c.offsetWidth; c.classList.add("flash"); }
+  addFilterOption("fCat", ev.cat); addFilterOption("fUser", ev.usr);
+  renderAll();
+}
+function addFilterOption(id, value) {
+  if (!value || value === "-") return;
+  const s = $(id); if ([...s.options].some((o) => o.value === value)) return;
+  const o = document.createElement("option"); o.value = value; o.textContent = value; s.appendChild(o);
+}
+let renderQueued = false;
+function renderAll() { if (renderQueued) return; renderQueued = true; requestAnimationFrame(() => { renderQueued = false; renderTable(); renderFeed(); renderChart(); renderDist(); renderIncidents(); renderUserFeed(); }); }
+
+function rowMatches(e) {
+  if (!app.filters.has(e.sev)) return false;
+  if ($("fCat").value && e.cat !== $("fCat").value) return false;
+  if ($("fUser").value && e.usr !== $("fUser").value) return false;
+  const q = $("search").value.trim().toLowerCase();
+  return !q || (e.cat + " " + e.type + " " + e.msg + " " + e.usr).toLowerCase().includes(q);
+}
+function renderTable() {
+  const tb = $("tbody"); tb.innerHTML = "";
+  const rows = app.events.filter(rowMatches).slice(0, 250);
+  rows.forEach((e) => {
+    const tr = document.createElement("tr"); const s = document.createElement("td"); s.appendChild(badge(e.sev));
+    tr.append(td(e.aid ? "#" + e.aid : "—", "mono muted"), td(fmtTime(e.time), "mono"), td(fmtUptime(e.up), "mono muted"), td(e.cat, "cat"),
+              td(e.type, "mono"), td(e.usr, "mono muted"), s, td(e.msg), td(e.h ? e.h.slice(0, 12) + "…" : "—", "hash"));
+    tb.appendChild(tr);
+  });
+  $("empty").style.display = rows.length ? "none" : "block";
+}
+function feedItem(e) {
+  const d = el("div", "feed-item"); d.style.setProperty("--c", SEV_COLOR[e.sev]);
+  const info = el("div"); info.append(el("b", "", e.type), el("span", "", e.msg));
+  d.append(el("i"), info, el("small", "", fmtTime(e.time))); return d;
+}
+function renderFeed() {
+  const f = $("feed"); f.innerHTML = "";
+  if (!app.events.length) { f.appendChild(el("div", "empty", "Nenhum evento ainda.")); return; }
+  app.events.slice(0, 6).forEach((e) => f.appendChild(feedItem(e)));
+}
+
+// ---------- Grafico (ultimos 15 minutos) ----------
+const MIN = 15;
+for (let i = 0; i < MIN; i++) {
+  const col = el("div", "col");
+  ["info", "aviso", "alerta", "critico"].forEach((s) => { const seg = el("div", "seg"); seg.dataset.sev = s; seg.style.background = SEV_COLOR[s]; seg.style.height = "0"; col.appendChild(seg); });
+  $("chart").appendChild(col); $("chartX").appendChild(el("span", "", i === MIN - 1 ? "agora" : `-${MIN - 1 - i}m`));
+}
+function renderChart() {
+  const now = Date.now(), b = Array.from({ length: MIN }, () => ({ info: 0, aviso: 0, alerta: 0, critico: 0 }));
+  app.events.forEach((e) => { const a = Math.floor((now - e.time.getTime()) / 60000); if (a >= 0 && a < MIN) b[MIN - 1 - a][e.sev]++; });
+  const max = Math.max(4, ...b.map((x) => x.info + x.aviso + x.alerta + x.critico));
+  [...$("chart").children].forEach((col, i) => {
+    const t = b[i].info + b[i].aviso + b[i].alerta + b[i].critico; col.dataset.tip = `${t} evento${t === 1 ? "" : "s"}`;
+    [...col.children].forEach((seg) => (seg.style.height = (b[i][seg.dataset.sev] / max * 100) + "%"));
+  });
+}
+function distRows(target, entries, total, colorFn) {
+  const box = $(target); box.innerHTML = "";
+  entries.forEach(([name, n]) => {
+    const r = el("div", "dist-row"), tr = el("div", "dist-track"), f = el("div", "dist-fill");
+    f.style.background = colorFn(name); f.style.width = (n / Math.max(1, total) * 100) + "%"; tr.appendChild(f);
+    r.append(el("span", "", name), tr, el("b", "", String(n))); box.appendChild(r);
+  });
+}
+function renderDist() {
+  const total = app.events.length;
+  distRows("dist", ["info", "aviso", "alerta", "critico"].map((s) => [s, app.counts[s]]), total, (s) => SEV_COLOR[s]);
+  const cats = {}; app.events.forEach((e) => (cats[e.cat] = (cats[e.cat] || 0) + 1));
+  distRows("distCat", Object.entries(cats).sort((a, b) => b[1] - a[1]).slice(0, 8), total, () => "var(--accent)");
+}
+
+// ---------- Incidentes ----------
+function renderIncidents() {
+  const grid = $("incGrid"); grid.innerHTML = "";
+  const counts = {}; for (const k in INCIDENT_TYPES) counts[k] = 0;
+  app.events.forEach((e) => { const k = incidentKind(e.type); if (k) counts[k]++; });
+  for (const k in INCIDENT_TYPES) {
+    const c = el("div", "card inc"); c.style.setProperty("--c", INCIDENT_TYPES[k].c);
+    c.append(el("div", "kpi-label", INCIDENT_TYPES[k].name), el("div", "num", String(counts[k])), el("div", "what", INCIDENT_TYPES[k].types.join(" · ").toLowerCase()));
+    grid.appendChild(c);
+  }
+  const inc = app.events.filter((e) => e.sev === "alerta" || e.sev === "critico");
+  const tb = $("incBody"); tb.innerHTML = "";
+  inc.slice(0, 200).forEach((e) => {
+    const tr = document.createElement("tr"), s = document.createElement("td"); s.appendChild(badge(e.sev));
+    const k = incidentKind(e.type);
+    tr.append(td(fmtTime(e.time), "mono"), td(k ? INCIDENT_TYPES[k].name : "outro"), td(e.type, "mono"), td(e.usr, "mono muted"), s, td(e.msg));
+    tb.appendChild(tr);
+  });
+  $("incEmpty").style.display = inc.length ? "none" : "block";
+  $("incCount").textContent = inc.length; $("incCount").classList.toggle("show", inc.length > 0);
+}
+
+// ---------- Usuarios ----------
+function addUser(u) {
+  if (u.i === 0) { app.users = []; $("userBody").innerHTML = ""; }
+  app.users.push(u);
+  const tr = document.createElement("tr"); tr.className = "clickable";
+  const fatores = !u.pin ? "—" : u.card ? "2 (crachá + PIN)" : "1 (só PIN)";
+  const sit = document.createElement("td"); sit.appendChild(badge(u.active ? "info" : "critico")); sit.firstChild.textContent = u.active ? "ativo" : "revogado";
+  tr.append(td("#" + u.i, "mono muted"), td(u.name), td(u.admin ? "administrador" : "usuário", "muted"), sit,
+            td(u.pin ? "cadastrado" : "pendente", "mono " + (u.pin ? "" : "muted")), td(u.card ? "C:" + u.card + "…" : "—", "hash"),
+            td(fatores, "mono"), td(String(u.n), "mono"));
+  tr.onclick = () => { app.selectedUser = u.name; renderUserFeed(); };
+  $("userBody").appendChild(tr);
+  $("userEmpty").style.display = "none";
+  $("uPins").textContent = app.users.filter((x) => x.pin).length + " de " + (app.users.length);
+  addFilterOption("fUser", u.name);
+}
+function renderUserFeed() {
+  const name = app.selectedUser, f = $("uFeed"); f.innerHTML = "";
+  $("uHistName").textContent = name ? name : "selecione um usuário";
+  if (!name) { f.appendChild(el("div", "empty", "—")); return; }
+  const list = app.events.filter((e) => e.usr === name).slice(0, 12);
+  if (!list.length) { f.appendChild(el("div", "empty", "Nenhum evento deste usuário nesta sessão.")); return; }
+  list.forEach((e) => f.appendChild(feedItem(e)));
+}
+
+// ---------- Auditoria ----------
+let badId = 0;
+function showAudit(m) {
+  const s = $("auditStatus"); badId = m.ok ? 0 : m.bad;
+  s.textContent = m.ok ? `ÍNTEGRA · ${m.total} registros conferidos` : `VIOLADA · registro #${m.bad} (${m.why})`;
+  s.style.setProperty("--c", m.ok ? "var(--ok)" : "var(--critico)");
+  $("aAnchor").textContent = "#" + m.anchor; $("aEpoch").textContent = m.epoch; markBad();
+  if (!m.ok) toast({ sev: "critico", type: "AUDITORIA_VIOLADA", msg: `Registro #${m.bad}: ${m.why}` });
+}
+function markBad() { [...$("recBody").children].forEach((tr) => { const id = Number(tr.dataset.id); tr.classList.toggle("bad", badId > 0 && id === badId); tr.classList.toggle("after", badId > 0 && id > badId); }); }
+const shortHash = (h) => (h ? h.slice(0, 12) + "…" : "—");
+function addRecord(r) {
+  const tr = document.createElement("tr"); tr.dataset.id = r.id; const s = document.createElement("td"); s.appendChild(badge(r.sev));
+  tr.append(td("#" + r.id, "mono"), td(`boot ${r.boot} · ${fmtUptime(r.up)}`, "mono muted"), td(r.cat, "cat"), td(r.type, "mono"), s,
+            td(r.usr, "mono muted"), td(shortHash(r.prev), "hash"), td(shortHash(r.hash), "hash"));
+  $("recBody").prepend(tr); markBad();
+}
+
+// ---------- Botoes que conversam com a placa (so leitura) ----------
+function setBoardButtons(on) { ["btnVerify", "btnRecs", "btnUsers"].forEach((id) => ($(id).disabled = !on)); }
+$("btnVerify").onclick = () => (app.demo ? demoAudit() : (send("AUDIT?"), logConsole("> AUDIT?", "tx")));
+$("btnRecs").onclick = () => (app.demo ? demoRecs() : (send("REC?"), logConsole("> REC?", "tx")));
+$("btnUsers").onclick = () => (app.demo ? demoUsers() : (send("USERS?"), logConsole("> USERS?", "tx")));
+
+// ---------- Laboratorio de forca bruta ----------
+function human(sec) {
+  if (!isFinite(sec)) return "∞";
+  if (sec < 1) return Math.round(sec * 1000) + " ms";
+  const units = [["anos", 31557600], ["dias", 86400], ["h", 3600], ["min", 60], ["s", 1]];
+  for (const [u, v] of units) if (sec >= v) { const n = sec / v; return (n >= 100 ? Math.round(n).toLocaleString("pt-BR") : n.toFixed(1).replace(".", ",")) + " " + u; }
+  return sec.toFixed(1) + " s";
+}
+// Soma dos tempos de bloqueio para "tentativas" erradas seguidas
+function lockSeconds(attempts, every, base, max) {
+  const locks = Math.floor(attempts / every); let total = 0, d = base;
+  for (let k = 0; k < locks; k++) { total += Math.min(d, max); if (d < max) d *= 2; else { total += (locks - k - 1) * max; break; } }
+  return { locks, total };
+}
+function labParams() {
+  const kdfBoard = $("lUseBoard").checked && app.kdf > 0;
+  if (kdfBoard) $("lKdf").value = app.kdf;
+  return { n: +$("lDigits").value, raw: +$("lRaw").value / 1000, kdf: +$("lKdf").value / 1000, every: +$("lLockN").value, base: +$("lLockBase").value, max: 900 };
+}
+function scenarios(p, n) {
+  const half = Math.pow(10, n) / 2, lk = lockSeconds(half, p.every, p.base, p.max);
+  return [
+    { name: "Sem proteção", sub: "comparação direta, sem limite", c: "var(--critico)", t: half * p.raw },
+    { name: "Com PBKDF2", sub: `${Math.round(p.kdf * 1000)} ms por tentativa`, c: "var(--alerta)", t: half * p.kdf },
+    { name: "PBKDF2 + bloqueio", sub: `${lk.locks.toLocaleString("pt-BR")} bloqueios progressivos`, c: "var(--ok)", t: half * p.kdf + lk.total },
+    { name: "Offline (cópia da flash)", sub: "PC calcula PBKDF2 a ~5 ms", c: "var(--accent-2)", t: half * 0.005 }
+  ];
+}
+function renderLab() {
+  const p = labParams();
+  $("lDigitsV").textContent = p.n; $("lRawV").textContent = $("lRaw").value; $("lKdfV").textContent = $("lKdf").value;
+  $("lLockNV").textContent = p.every; $("lLockV").textContent = `${p.base} · ${p.max}`;
+  $("lCombos").textContent = Math.pow(10, p.n).toLocaleString("pt-BR") + " combinações";
+  const sc = scenarios(p, p.n), maxLog = Math.max(...sc.map((s) => Math.log10(s.t + 1)));
+  const box = $("scen"); box.innerHTML = "";
+  sc.forEach((s) => {
+    const row = el("div", "scen-row"); row.style.setProperty("--c", s.c);
+    const name = el("div", "scen-name", s.name); name.appendChild(el("small", "", s.sub));
+    const tr = el("div", "scen-track"), f = el("div", "scen-fill"); tr.appendChild(f);
+    row.append(name, tr, el("div", "scen-time", human(s.t))); box.appendChild(row);
+    requestAnimationFrame(() => (f.style.width = Math.max(2, Math.log10(s.t + 1) / maxLog * 100) + "%"));
+  });
+  renderGrowth(p);
+}
+function renderGrowth(p) {
+  const svg = $("growth"), W = 640, H = 260, L = 56, R = 16, T = 14, B = 30, digits = [3, 4, 5, 6, 7, 8];
+  const series = [0, 1, 2, 3].map((i) => digits.map((n) => scenarios(p, n)[i]));
+  const all = series.flat().map((s) => Math.log10(Math.max(s.t, 0.001)));
+  const lo = Math.floor(Math.min(...all)), hi = Math.ceil(Math.max(...all));
+  const x = (i) => L + i * (W - L - R) / (digits.length - 1), y = (v) => T + (hi - v) * (H - T - B) / Math.max(1, hi - lo);
+  let g = "";
+  const marks = [[0, "1 s"], [Math.log10(3600), "1 h"], [Math.log10(86400), "1 dia"], [Math.log10(31557600), "1 ano"], [Math.log10(31557600 * 1000), "1000 anos"]];
+  marks.forEach(([v, t]) => { if (v >= lo && v <= hi) g += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="#1a2534" stroke-dasharray="3 4"/><text x="${L - 6}" y="${y(v) + 4}" fill="#4b5b70" font-size="10" text-anchor="end" font-family="JetBrains Mono, Consolas, monospace">${t}</text>`; });
+  digits.forEach((n, i) => (g += `<text x="${x(i)}" y="${H - 10}" fill="#7a8ba1" font-size="11" text-anchor="middle" font-family="JetBrains Mono, Consolas, monospace">${n} díg.</text>`));
+  const colors = ["#f43f5e", "#fb923c", "#34d399", "#38bdf8"];
+  series.forEach((s, i) => {
+    const pts = s.map((v, j) => `${x(j)},${y(Math.log10(Math.max(v.t, 0.001)))}`).join(" ");
+    g += `<polyline points="${pts}" fill="none" stroke="${colors[i]}" stroke-width="2"/>`;
+    s.forEach((v, j) => (g += `<circle cx="${x(j)}" cy="${y(Math.log10(Math.max(v.t, 0.001)))}" r="${digits[j] === p.n ? 5 : 3}" fill="${colors[i]}"/>`));
+  });
+  svg.innerHTML = g;
+}
+["lDigits", "lRaw", "lKdf", "lLockN", "lLockBase"].forEach((id) => ($(id).oninput = () => { if (id === "lKdf") $("lUseBoard").checked = false; renderLab(); }));
+$("lUseBoard").onchange = renderLab;
+
+// Simulacao de ataque online com as regras do firmware
+$("btnSim").onclick = () => {
+  const p = labParams(), log = $("simLog"); log.innerHTML = "";
+  let fails = 0, level = 0, t = 0, locks = 0;
+  const total = Math.pow(10, p.n);
+  for (let i = 1; i <= 40; i++) {
+    const pin = String(i - 1).padStart(p.n, "0");
+    t += p.kdf; fails++;
+    let line = `tentativa ${String(i).padStart(2)} · PIN ${pin} · errado`, cls = "";
+    if (fails >= p.every) {
+      const d = Math.min(p.base * Math.pow(2, level), p.max); level++; locks++; t += d; fails = 0;
+      line += ` → BLOQUEIO de ${d} s (nível ${level})`; cls = "l";
+    } else if (fails >= Math.max(1, p.every - 2)) { line += " → alerta de força bruta"; cls = "a"; }
+    log.appendChild(el("div", cls, line));
+  }
+  log.appendChild(el("div", "k", `Depois de 40 tentativas: ${human(t)} gastos e só ${(40 / total * 100).toFixed(2).replace(".", ",")}% das combinações testadas.`));
+  $("simN").textContent = "40"; $("simL").textContent = locks; $("simT").textContent = human(t); $("simP").textContent = (40 / total * 100).toFixed(2).replace(".", ",") + "%";
+  log.scrollTop = 0;
+};
+
+// ---------- Avisos flutuantes ----------
+function toast(e) {
+  const t = el("div", "toast"); t.style.setProperty("--c", SEV_COLOR[e.sev]);
+  t.append(el("b", "", `${SEV_LABEL[e.sev].toUpperCase()} · ${e.type}`), e.msg);
+  $("toasts").appendChild(t); setTimeout(() => t.remove(), 5000);
+}
+
+// ---------- Modulos e pinos ----------
+const MODULES = [
+  ["esp", "ESP32-WROOM-32", "microcontrolador"], ["lcd", "LCD 16x2 I2C", "GPIO 21 / 22"], ["joy", "Joystick", "GPIO 34 / 35"],
+  ["btn", "Botão", "GPIO 25 · pull-up"], ["rfid", "RFID RC522", "SPI · 18/19/23/26/27"], ["usb", "Painel USB", "Web Serial · PING/PONG"],
+  ["auth", "Senha com hash", "PBKDF2 + salt"], ["ids", "IDS / bloqueio", "força bruta"], ["audit", "Auditoria HMAC", "corrente de hashes"]
+];
+const STATUS_STYLE = { ok: ["online", "var(--ok)"], fail: ["falha", "var(--critico)"], wait: ["aguardando", "var(--aviso)"], off: ["offline", "var(--dim)"], locked: ["bloqueado", "var(--critico)"] };
+MODULES.forEach(([id, name, sub]) => {
+  const d = el("div", "module"); d.id = "mod-" + id; const l = el("div", "", name); l.appendChild(el("small", "", sub));
+  d.append(l, el("span", "status-tag", "offline")); $("modules").appendChild(d);
+});
+function setModule(id, st) { const t = document.querySelector(`#mod-${id} .status-tag`); if (!t) return; t.textContent = STATUS_STYLE[st][0]; t.style.setProperty("--c", STATUS_STYLE[st][1]); }
+function setModuleSub(id, text) { const s = document.querySelector(`#mod-${id} small`); if (s) s.textContent = text; }
+function resetModules() { MODULES.forEach(([id]) => setModule(id, "off")); }
+const PINS = [
+  ["RFID RC522", "SDA/SS", 27, ""], ["RFID RC522", "SCK", 18, "SPI"], ["RFID RC522", "MOSI", 23, "SPI"], ["RFID RC522", "MISO", 19, "SPI"],
+  ["RFID RC522", "RST", 26, ""], ["RFID RC522", "3.3V", "3V3", "nunca 5 V"], ["LCD I2C", "SDA", 21, "VCC no 5 V"], ["LCD I2C", "SCL", 22, ""],
+  ["Joystick", "VRx", 34, "só entrada · ADC1"], ["Joystick", "VRy", 35, "só entrada · ADC1"], ["Joystick", "+5V", "3V3", "ligar no 3,3 V"], ["Botão", "—", 25, "INPUT_PULLUP"]
+];
+PINS.forEach(([c, s, g, o]) => { const tr = document.createElement("tr"); tr.append(td(c), td(s, "mono"), td(String(g), "mono cat"), td(o, "muted")); $("pinBody").appendChild(tr); });
+
+// ---------- Conexao Web Serial ----------
+const hasSerial = "serial" in navigator;
+if (!hasSerial) $("bannerSupport").classList.add("show");
+async function send(text) { if (!app.writer) return; try { await app.writer.write(text + "\n"); } catch (e) {} }
+async function connect() {
+  if (!hasSerial) { $("bannerSupport").classList.add("show"); return; }
+  stopDemo();
+  try { app.port = await navigator.serial.requestPort(); await app.port.open({ baudRate: 115200 }); }
+  catch (e) { logConsole("# conexão cancelada ou porta ocupada (feche a Arduino IDE): " + e.message, "dbg"); return; }
+  app.connected = true; setLink("warn", "CONECTANDO"); $("btnConnectText").textContent = "Desconectar";
+  const enc = new TextEncoderStream(); enc.readable.pipeTo(app.port.writable).catch(() => {}); app.writer = enc.writable.getWriter();
+  app.pingTimer = setInterval(() => send("PING"), 2000);
+  send("PING"); send("LCD?"); setTimeout(() => send("USERS?"), 600);
+  setBoardButtons(true); readLoop();
+}
+async function readLoop() {
+  const dec = new TextDecoderStream(); app.port.readable.pipeTo(dec.writable).catch(() => {}); app.reader = dec.readable.getReader();
+  let buf = "";
+  try {
+    while (true) {
+      const { value, done } = await app.reader.read(); if (done) break;
+      buf += value; let i;
+      while ((i = buf.indexOf("\n")) >= 0) { handleLine(buf.slice(0, i)); buf = buf.slice(i + 1); }
+      if (buf.length > 4096) buf = "";   // protecao contra linha gigante
+    }
+  } catch (e) { logConsole("# leitura interrompida: " + e.message, "dbg"); }
+  disconnect();
+}
+async function disconnect() {
+  if (!app.connected) return;
+  app.connected = false; clearInterval(app.pingTimer);
+  try { await app.reader?.cancel(); } catch (e) {} try { await app.writer?.close(); } catch (e) {} try { await app.port?.close(); } catch (e) {}
+  app.reader = app.writer = app.port = null;
+  setLink("", "DESCONECTADO"); $("btnConnectText").textContent = "Conectar ESP32"; resetModules(); setBoardButtons(false);
+  $("bannerLock").classList.remove("show"); logConsole("# desconectado", "dbg");
+}
+$("btnConnect").onclick = () => (app.connected ? disconnect() : connect());
+if (hasSerial) navigator.serial.addEventListener("disconnect", () => disconnect());
+
+setInterval(() => {
+  if (app.connected && app.lastHb && Date.now() - app.lastHb > 3500) { setLink("warn", "SEM SINAL"); setModule("esp", "wait"); }
+  $("clock").textContent = new Date().toLocaleString("pt-BR"); renderChart();
+}, 1000);
+
+// ---------- Filtros, CSV ----------
+document.querySelectorAll(".chip").forEach((c) => (c.onclick = () => { const s = c.dataset.sev; app.filters.has(s) ? app.filters.delete(s) : app.filters.add(s); c.classList.toggle("active"); renderTable(); }));
+["search", "fCat", "fUser"].forEach((id) => ($(id).oninput = renderTable));
+$("btnClear").onclick = () => { app.events = []; app.counts = { info: 0, aviso: 0, alerta: 0, critico: 0 }; app.ok = app.denied = 0; ["kOk", "kDenied", "kAlerts"].forEach((i) => ($(i).textContent = "0")); renderAll(); };
+$("btnCsv").onclick = () => {
+  const esc = (v) => `"${String(v).replace(/"/g, '""')}"`;
+  const lines = [["auditoria_id", "hora_pc", "uptime_esp", "categoria", "evento", "usuario", "severidade", "descricao", "hash_inicio"].join(",")];
+  app.events.slice().reverse().forEach((e) => lines.push([e.aid, e.time.toISOString(), fmtUptime(e.up), e.cat, e.type, e.usr, e.sev, e.msg, e.h].map(esc).join(",")));
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" }));
+  a.download = `sentinel_eventos_${new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-")}.csv`; a.click(); URL.revokeObjectURL(a.href);
+};
+
+// ---------- Modo demo (dados simulados, claramente marcados) ----------
+const demoMsg = (m) => handleLine(JSON.stringify(m));
+const DEMO_SCREENS = {
+  OCIOSO: ["\u0006 SENTINEL   PC\u0004", "  Cracha ou OK"], MENU: ["→ Entrar     1/8", "  Historico"],
+  SENHA: ["\u0004Senha Miguel", "   *  * [7] _"], STATUS: ["Status       4/8", "RFID: ok 0x92"], AGUARDAR_CARTAO: ["\u0004Aproxime cracha", "  Vinicius"]
+};
+const DEMO_EVENTS = [
+  ["rfid", "CARTAO_IDENTIFICADO", "info", "1o fator ok (C:3fa1)", "Miguel"], ["auth", "ACESSO_LIBERADO", "info", "2 fatores: cracha + PIN (PBKDF2 812 ms)", "Miguel"],
+  ["auth", "ACESSO_NEGADO", "aviso", "PIN incorreto (falha 2)", "Vinicius"], ["auth", "CARTAO_DESCONHECIDO", "aviso", "Cracha nao cadastrado (C:9b0e, MIFARE 1KB) (falha 1)", "-"],
+  ["ids", "POSSIVEL_FORCA_BRUTA", "alerta", "3 falhas seguidas, restam 2", "-"], ["ids", "BLOQUEIO_ATIVADO", "critico", "Forca bruta: bloqueio de 30 s (nivel 1)", "-"],
+  ["admin", "CARTAO_CADASTRADO", "info", "Cracha C:77d2 (MIFARE 1KB, UID de 4 bytes)", "Petrus"], ["auth", "ACESSO_LIBERADO", "info", "1 fator: so PIN (PBKDF2 809 ms)", "Admin"]
+];
+let demoT = 0, demoId = 1;
+function demoHash(i) { let h = "", x = (i * 2654435761) >>> 0; for (let k = 0; k < 8; k++) { x = (x * 1103515245 + 12345) >>> 0; h += x.toString(16).padStart(8, "0"); } return h.slice(0, 64); }
+function startDemo() {
+  if (app.connected) return;
+  app.demo = true; $("bannerDemo").classList.add("show"); setLink("demo", "DEMO"); $("btnDemo").textContent = "Parar demo"; setBoardButtons(true);
+  demoMsg({ t: "boot", v: "0.6.0 (demo)", chip: "simulado", lcd: true, boot: 4 });
+  demoUsers();
+  const order = Object.keys(DEMO_SCREENS);
+  app.demoTimer = setInterval(() => {
+    demoT++;
+    const st = order[Math.floor(demoT / 5) % order.length];
+    demoMsg({ t: "hb", up: demoT, heap: 231000 - (demoT % 7) * 340, state: st, jx: Math.round(2048 + Math.sin(demoT / 3) * 1900), jy: Math.round(2048 + Math.cos(demoT / 4) * 1900),
+              btn: demoT % 9 === 0 ? 1 : 0, lcd: 1, pc: 1, pin: 1, kdf: 812, rfid: 1, rfv: 146, fails: demoT % 5, left: 5 - (demoT % 5),
+              lock: (demoT % 60) > 45 ? 60 - (demoT % 60) : 0, lvl: 1, locks: Math.floor(demoT / 60) + 1, recs: 20 + demoT, last: 20 + demoT, boot: 4, epoch: 0 });
+    if (demoT % 5 === 0) demoMsg({ t: "lcd", l1: DEMO_SCREENS[st][0], l2: DEMO_SCREENS[st][1] });
+    if (Math.random() < 0.3) { const e = DEMO_EVENTS[Math.floor(Math.random() * DEMO_EVENTS.length)], id = demoId++;
+      demoMsg({ t: "evt", id, up: demoT, cat: e[0], type: e[1], sev: e[2], msg: e[3] + " (simulado)", usr: e[4], h: demoHash(id).slice(0, 16) }); }
+  }, 1000);
+}
+function demoUsers() {
+  [["Admin", 1, 1, "", 14], ["Miguel", 1, 1, "3fa1", 9], ["Vinicius", 1, 1, "c08e", 4], ["Petrus", 0, 1, "77d2", 2]].forEach(([n, a, p, c, k], i) =>
+    demoMsg({ t: "user", i, name: n, admin: i === 0, active: !!a, pin: !!p, card: c, n: k }));
+}
+function demoRecs() {
+  const last = 20 + demoT, types = ["ACESSO_NEGADO", "CARTAO_IDENTIFICADO", "POSSIVEL_FORCA_BRUTA", "ACESSO_LIBERADO", "BOOT"];
+  demoMsg({ t: "recbegin", n: 12 });
+  for (let i = last - 11; i <= last; i++) { const tp = types[i % types.length];
+    demoMsg({ t: "rec", id: i, boot: 4, up: i * 7, cat: tp === "BOOT" ? "sistema" : tp.startsWith("POSS") ? "ids" : "auth", type: tp,
+              sev: tp === "ACESSO_NEGADO" ? "aviso" : tp.startsWith("POSS") ? "alerta" : "info", usr: tp === "BOOT" ? "-" : "Miguel", prev: demoHash(i - 1), hash: demoHash(i) }); }
+}
+function demoAudit() { const last = 20 + demoT, broken = demoT % 2 === 1;
+  demoMsg({ t: "audit", ok: !broken, total: broken ? 14 : last, bad: broken ? last - 6 : 0, why: broken ? "conteudo alterado (HMAC nao confere)" : "ok", anchor: 0, epoch: 0 }); }
+function stopDemo() {
+  if (!app.demo) return;
+  app.demo = false; clearInterval(app.demoTimer); $("bannerDemo").classList.remove("show"); $("btnDemo").textContent = "Modo demo";
+  setLink("", "DESCONECTADO"); resetModules(); setBoardButtons(false); $("bannerLock").classList.remove("show");
+}
+$("btnDemo").onclick = () => (app.demo ? stopDemo() : startDemo());
+
+// ---------- Inicio ----------
+renderAll();
+try { const p = localStorage.getItem("sentinel_page"); if (p && PAGES[p]) goPage(p); } catch (e) {}
+</script>
+</body>
+</html>

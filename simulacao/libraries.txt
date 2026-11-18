@@ -1,0 +1,3 @@
+# Bibliotecas usadas pelo SENTINEL (o Wokwi instala sozinho)
+LiquidCrystal I2C
+MFRC522

@@ -124,7 +124,7 @@ Uma página HTML única que conversa com a ESP32 pelo **cabo USB** (Web Serial A
 
 ![Esquema de montagem do SENTINEL](docs/img/esquema_montagem.png)
 
-> Versão vetorial (dá para dar zoom sem perder qualidade): [`docs/img/esquema_montagem.svg`](docs/img/esquema_montagem.svg)
+> Versão vetorial (dá para dar zoom sem perder qualidade): [`docs/img/esquema_montagem.svg`](docs/img/esquema_montagem.svg) · Circuito para simular no **Wokwi**: [`simulacao/diagram.json`](simulacao/diagram.json)
 
 | Componente | Sinal → GPIO da ESP32 | Alimentação |
 |---|---|---|
@@ -219,6 +219,7 @@ projeto-c/
 │   ├── feedback_manager.*       avisos (substituem os LEDs)
 │   └── telemetry_manager.*      protocolo JSON com o painel
 ├── painel/index.html            painel SOC (um único arquivo)
+├── simulacao/                   circuito para o Wokwi (diagram.json + libraries.txt)
 ├── tests/hardware/              testes de bancada de cada componente
 └── docs/                        documentação, fluxogramas (Mermaid + PNG) e imagens
 ```
@@ -237,6 +238,7 @@ projeto-c/
 | 07 | [IDS e auditoria](docs/07_etapas4e5.md) | Bloqueio progressivo, corrente HMAC |
 | 08 | [Fluxogramas](docs/08_fluxogramas.md) | 5 diagramas do sistema |
 | 09 | [RFID](docs/09_rfid.md) | Ligação, cadastro de crachá, limitações |
+| 10 | [Simulação (Wokwi)](docs/10_simulacao.md) | Circuito em código (`simulacao/diagram.json`) e simulação no navegador |
 
 ## ⚠️ Limitações (documentadas de propósito)
 

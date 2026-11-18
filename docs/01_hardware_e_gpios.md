@@ -2,6 +2,10 @@
 
 > Status: **proposto na Etapa 1, ainda não validado em bancada.** A coluna "Validado" é preenchida pelo grupo depois de cada teste.
 
+## Esquema de montagem
+
+![Esquema de montagem](img/esquema_montagem.png)
+
 ## 1. Componentes
 
 | Componente | Situação | Alimentação | Observação |

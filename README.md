@@ -122,6 +122,10 @@ Uma página HTML única que conversa com a ESP32 pelo **cabo USB** (Web Serial A
 
 ## 🔌 Hardware e ligações
 
+![Esquema de montagem do SENTINEL](docs/img/esquema_montagem.png)
+
+> Versão vetorial (dá para dar zoom sem perder qualidade): [`docs/img/esquema_montagem.svg`](docs/img/esquema_montagem.svg)
+
 | Componente | Sinal → GPIO da ESP32 | Alimentação |
 |---|---|---|
 | **LCD 16x2 I2C** | SDA → 21 · SCL → 22 | **5 V** (VIN) |

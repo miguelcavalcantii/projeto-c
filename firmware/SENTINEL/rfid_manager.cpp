@@ -36,6 +36,9 @@ static byte lerVersao() {
 bool rfidIniciar() {
   SPI.begin(PIN_RFID_SCK, PIN_RFID_MISO, PIN_RFID_MOSI, PIN_RFID_SS);
   leitor.PCD_Init();
+  // Ganho maximo da antena: aumenta o alcance (modulos clone costumam
+  // vir com ganho baixo e so leem com o cartao praticamente encostado)
+  leitor.PCD_SetAntennaGain(MFRC522::RxGain_max);
   versao = lerVersao();
   presente = versaoValida(versao);
 
@@ -64,6 +67,7 @@ void rfidAtualizar() {
     avisoPerdeu = true;
   } else if (!presente) {
     leitor.PCD_Init();         // tenta de novo: talvez tenha acabado de ser plugado
+    leitor.PCD_SetAntennaGain(MFRC522::RxGain_max);
     v = lerVersao();
     if (versaoValida(v)) {
       presente = true;

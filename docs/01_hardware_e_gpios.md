@@ -33,8 +33,8 @@
 | Joystick VRx | 34 | Entrada analógica | Só entrada, ADC1 (funciona com Wi-Fi ligado) | ☐ |
 | Joystick VRy | 35 | Entrada analógica | Só entrada, ADC1 | ☐ |
 | Botão | 25 | Entrada (INPUT_PULLUP) | Tem pull-up interno (o 34/35 não tem) | ☐ |
-| ~~LED verde~~ (removido; função passou para o LCD) | 32 (reservado) | – | Pode voltar no futuro | – |
-| ~~LED vermelho~~ (removido; função passou para o LCD) | 33 (reservado) | – | Pode voltar no futuro | – |
+| Buzzer (perna +) | 32 | Saída (PWM/tone) | GPIO livre, sem função de boot; perna − no GND | ☐ |
+| ~~LEDs~~ (removidos; função passou para o LCD e o buzzer) | 33 (livre) | – | – | – |
 
 ### Conferência de conflitos (feita na Etapa 1)
 
@@ -74,6 +74,8 @@ Os LEDs foram substituídos por feedback no LCD: ícone de "certo" com luz fixa 
 **Joystick:** GND→GND, +5V (nome impresso no módulo)→**3V3**, VRx→34, VRy→35, SW→sem ligação por enquanto (pode virar um segundo botão no futuro: GPIO 4 ou 13).
 
 **Botão:** uma perna no GPIO 25 e a outra (do lado oposto) no GND. Não precisa de resistor.
+
+**Buzzer:** perna **+** (a mais comprida, ou o lado marcado com "+") no GPIO 32 e a perna **−** no GND. Funciona com buzzer **passivo** ou **ativo**; se for ativo e o som sair "rouco", mude `BUZZER_ATIVO` para `true` no `config.h`. Teste antes com `tests/hardware/09_buzzer`.
 
 **LEDs:** GPIO → resistor de 220–330 Ω → perna longa (anodo); perna curta (catodo) → GND. Com 3,3 V e 220 Ω a corrente fica em torno de 5–7 mA, bem abaixo do limite do GPIO.
 

@@ -131,10 +131,12 @@ Uma página HTML única que conversa com a ESP32 pelo **cabo USB** (Web Serial A
 | **LCD 16x2 I2C** | SDA → 21 · SCL → 22 | **5 V** (VIN) |
 | **Joystick** | VRx → 34 · VRy → 35 | **3,3 V** |
 | **Botão** | → 25 (pull-up interno) e GND | — |
+| **Buzzer** | perna **+** (a maior) → 32 · perna **−** → GND | — |
 | **RFID RC522** | SDA → 27 · SCK → 18 · MOSI → 23 · MISO → 19 · RST → 26 | **3,3 V** (nunca 5 V) |
 
 - O firmware **funciona sem o RFID**: ele detecta sozinho se o leitor está ligado, inclusive se for plugado depois.
-- Os LEDs do projeto original foram substituídos por avisos no LCD: ícones e a luz de fundo piscando.
+- Os LEDs do projeto original foram substituídos por avisos no LCD (ícones e a luz de fundo piscando) e por **sons no buzzer**.
+- **Sons:** bi-bip agudo = acesso liberado · bip grave longo = negado · 3 bips = alerta (3ª/4ª falha) · **sirene de 5 s = bloqueio** (e log violado) · bip curto a cada 15 s enquanto bloqueado. Para apresentar sem barulho: `BUZZER_LIGADO false` no `config.h`.
 - Detalhes em [`docs/01_hardware_e_gpios.md`](docs/01_hardware_e_gpios.md) e [`docs/09_rfid.md`](docs/09_rfid.md).
 
 ## 🚀 Como rodar
@@ -217,6 +219,7 @@ projeto-c/
 │   ├── display_manager.*        LCD e ícones
 │   ├── input_manager.*          joystick e botão (debounce)
 │   ├── feedback_manager.*       avisos (substituem os LEDs)
+│   ├── buzzer_manager.*         bips e sirene de alarme (GPIO 32)
 │   └── telemetry_manager.*      protocolo JSON com o painel
 ├── painel/index.html            painel SOC (um único arquivo)
 ├── simulacao/                   circuito para o Wokwi (diagram.json + libraries.txt)
@@ -257,6 +260,7 @@ projeto-c/
 | IDS, bloqueio progressivo e auditoria | ✅ Testado pela equipe na placa (17/11) |
 | Usuários, histórico e painel com 8 telas | ✅ Testado pela equipe na placa (17/11) |
 | Leitor RFID RC522 | ⏳ Firmware pronto e simulado; ligação na placa pendente |
+| Buzzer (bips e sirene) | ⏳ Firmware pronto e simulado (v0.7); teste na placa pendente |
 
 **Melhorias futuras:** checkpoints da auditoria fora da placa, RTC DS3231 para data e hora reais, Flash Encryption e cartões com criptografia de verdade (MIFARE DESFire + PN532).
 

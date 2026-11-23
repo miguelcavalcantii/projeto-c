@@ -8,6 +8,7 @@
 #include "event_logger.h"
 #include "user_manager.h"
 #include "rfid_manager.h"
+#include "buzzer_manager.h"
 
 #define HEARTBEAT_MS         1000   // manda o "batimento" a cada 1 s
 #define PAINEL_TIMEOUT_MS    5000   // sem PING por 5 s = painel desconectado
@@ -92,6 +93,8 @@ static void enviarHeartbeat() {
   msg += ",\"recs\":" + String(auditTotalRegistros());
   msg += ",\"last\":" + String(auditUltimoId());
   msg += ",\"boot\":" + String(auditNumeroBoot());
+  msg += ",\"buz\":" + String(BUZZER_LIGADO ? 1 : 0);
+  msg += ",\"snd\":" + String(buzzerTocando() ? 1 : 0);
   msg += ",\"epoch\":" + String(auditEpoca()) + "}";
   Serial.println(msg);
 }

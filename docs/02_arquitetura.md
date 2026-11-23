@@ -44,7 +44,7 @@ Obs.: a LiquidCrystal I2C pode mostrar um aviso de que "foi feita para AVR". Ess
 ├──────────────── Hardware ───────────────────┤
 │ rfid_manager  display_manager  input_manager│
 │ (RC522)       (LCD)            (joystick+botão)
-│               feedback_manager (avisos no LCD; substitui os LEDs)
+│               feedback_manager (avisos no LCD; substitui os LEDs) + buzzer_manager (sons)
 └─────────────────────────────────────────────┘
 ```
 

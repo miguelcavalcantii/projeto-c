@@ -878,8 +878,8 @@
 <text x="810" y="283" font-size="9.5" fill="#ffffff" text-anchor="middle" font-weight="600" font-family="Inter, Arial, sans-serif">D25</text>
 <circle cx="840" cy="296" r="6" fill="#8a96a3" stroke="#0f151c"/>
 <text x="840" y="283" font-size="9.5" fill="#7f8b98" text-anchor="middle" font-weight="600" font-family="Inter, Arial, sans-serif">D33</text>
-<circle cx="870" cy="296" r="6" fill="#8a96a3" stroke="#0f151c"/>
-<text x="870" y="283" font-size="9.5" fill="#7f8b98" text-anchor="middle" font-weight="600" font-family="Inter, Arial, sans-serif">D32</text>
+<circle cx="870" cy="296" r="6" fill="#f2c94c" stroke="#0f151c"/>
+<text x="870" y="283" font-size="9.5" fill="#ffffff" text-anchor="middle" font-weight="600" font-family="Inter, Arial, sans-serif">D32</text>
 <circle cx="900" cy="296" r="6" fill="#f2c94c" stroke="#0f151c"/>
 <text x="900" y="283" font-size="9.5" fill="#ffffff" text-anchor="middle" font-weight="600" font-family="Inter, Arial, sans-serif">D35</text>
 <circle cx="930" cy="296" r="6" fill="#f2c94c" stroke="#0f151c"/>
@@ -954,6 +954,12 @@
 <circle cx="680" cy="710" r="4" fill="#9aa1a8"/>
 <circle cx="640" cy="750" r="4" fill="#9aa1a8"/>
 <circle cx="680" cy="750" r="4" fill="#9aa1a8"/>
+<circle cx="860" cy="730.0" r="34" fill="#1d1d1d" stroke="#000" stroke-width="2"/>
+<circle cx="860" cy="730.0" r="6" fill="#444"/>
+<text x="842" y="716.0" font-size="14" fill="#ffffff" text-anchor="middle" font-weight="700" font-family="Inter, Arial, sans-serif">+</text>
+<text x="906" y="735.0" font-size="12" fill="#2b2b2b" text-anchor="start" font-weight="700" font-family="Inter, Arial, sans-serif">Buzzer</text>
+<circle cx="840" cy="710" r="4" fill="#9aa1a8"/>
+<circle cx="880" cy="750" r="4" fill="#9aa1a8"/>
 <rect x="120" y="990" width="280" height="190" rx="10" fill="#1d1f24" stroke="#0c0d10" stroke-width="2"/>
 <circle cx="310" cy="1095" r="66" fill="#2c2f36" stroke="#3d414a" stroke-width="3"/>
 <circle cx="310" cy="1095" r="36" fill="#111216" stroke="#5a5f69" stroke-width="2"/>
@@ -1020,6 +1026,14 @@
 <path d="M 680,794 L 680,906" fill="none" stroke="#1f2328" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"/>
 <circle cx="680" cy="794" r="4.5" fill="#1f2328" stroke="#fff" stroke-width="1.5"/>
 <circle cx="680" cy="906" r="4.5" fill="#1f2328" stroke="#fff" stroke-width="1.5"/>
+<path d="M 870,296 L 870,568 L 850,568 L 850,666 L 840,666" fill="none" stroke="#ffffff" stroke-width="8" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M 870,296 L 870,568 L 850,568 L 850,666 L 840,666" fill="none" stroke="#84cc16" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="870" cy="296" r="4.5" fill="#84cc16" stroke="#fff" stroke-width="1.5"/>
+<circle cx="840" cy="666" r="4.5" fill="#84cc16" stroke="#fff" stroke-width="1.5"/>
+<path d="M 880,794 L 880,906" fill="none" stroke="#ffffff" stroke-width="8" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M 880,794 L 880,906" fill="none" stroke="#1f2328" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="880" cy="794" r="4.5" fill="#1f2328" stroke="#fff" stroke-width="1.5"/>
+<circle cx="880" cy="906" r="4.5" fill="#1f2328" stroke="#fff" stroke-width="1.5"/>
 <path d="M 600,144 L 600,88 L 34,88 L 34,880 L 140,880" fill="none" stroke="#ffffff" stroke-width="8" stroke-linejoin="round" stroke-linecap="round"/>
 <path d="M 600,144 L 600,88 L 34,88 L 34,880 L 140,880" fill="none" stroke="#f59e0b" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"/>
 <circle cx="600" cy="144" r="4.5" fill="#f59e0b" stroke="#fff" stroke-width="1.5"/>
@@ -1072,9 +1086,11 @@
 <text x="1496" y="1122" font-size="11" fill="#2b2b2b" text-anchor="start" font-weight="500" font-family="Inter, Arial, sans-serif">VRy · 35</text>
 <line x1="1464" y1="1141" x2="1488" y2="1141" stroke="#14b8a6" stroke-width="5" stroke-linecap="round"/>
 <text x="1496" y="1145" font-size="11" fill="#2b2b2b" text-anchor="start" font-weight="500" font-family="Inter, Arial, sans-serif">Botão · 25</text>
+<line x1="1464" y1="1164" x2="1488" y2="1164" stroke="#84cc16" stroke-width="5" stroke-linecap="round"/>
+<text x="1496" y="1168" font-size="11" fill="#2b2b2b" text-anchor="start" font-weight="500" font-family="Inter, Arial, sans-serif">Buzzer + · 32</text>
 <rect x="440" y="990" width="860" height="92" rx="8" fill="#fff4e5" stroke="#f5c27a"/>
 <text x="456" y="1014" font-size="13" fill="#8a4b00" text-anchor="start" font-weight="700" font-family="Inter, Arial, sans-serif">⚠ RC522 e joystick no 3,3 V (nunca 5 V). Só o LCD usa o VIN (5 V).</text>
 <text x="456" y="1036" font-size="12" fill="#8a4b00" text-anchor="start" font-weight="500" font-family="Inter, Arial, sans-serif">Cada fio entra na coluna H da mesma fileira do pino do módulo (o pino fica na J). IRQ do RC522 e SW do joystick ficam soltos.</text>
-<text x="456" y="1054" font-size="12" fill="#8a4b00" text-anchor="start" font-weight="500" font-family="Inter, Arial, sans-serif">As fileiras do RC522 (48–55) e do botão (28–30) são um exemplo: o que importa é cada fio na fileira certa.</text>
+<text x="456" y="1054" font-size="12" fill="#8a4b00" text-anchor="start" font-weight="500" font-family="Inter, Arial, sans-serif">As fileiras do RC522 (48–55) e do botão (28–30) e do buzzer (38–40) são um exemplo: o que importa é cada fio na fileira certa.</text>
 <text x="456" y="1072" font-size="12" fill="#8a4b00" text-anchor="start" font-weight="500" font-family="Inter, Arial, sans-serif">O GND e o 3,3V do RC522 vão das fileiras 53 e 55 para os trilhos, porque a metade de cima não liga com a de baixo.</text>
 </svg>

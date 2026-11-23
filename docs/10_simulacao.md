@@ -5,14 +5,14 @@
 | | circuito.io | Wokwi |
 |---|---|---|
 | Aceita o circuito como **código** | ❌ Não: os componentes são escolhidos clicando | ✅ Sim: arquivo `diagram.json` |
-| Simula o firmware rodando | ❌ Não | ✅ Sim (ESP32, LCD I2C, joystick, botão) |
+| Simula o firmware rodando | ❌ Não | ✅ Sim (ESP32, LCD I2C, joystick, botão, buzzer) |
 | Tem ESP32 + LCD I2C + joystick | Opções limitadas | ✅ Sim |
 | Tem o RC522 | ❌ | ❌ (o firmware detecta a falta e segue só com PIN) |
 
 ## Wokwi: o circuito pronto em 2 minutos
 
 Os arquivos estão em [`simulacao/`](../simulacao):
-- `diagram.json`: o circuito (ESP32, LCD 16x2 I2C, joystick, botão e as ligações)
+- `diagram.json`: o circuito (ESP32, LCD 16x2 I2C, joystick, botão, buzzer e as ligações)
 - `libraries.txt`: as bibliotecas que o Wokwi instala sozinho
 
 ### Só o desenho do circuito

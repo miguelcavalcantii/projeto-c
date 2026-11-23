@@ -42,7 +42,7 @@ O painel USB foi a forma mais rápida de ter visualização ao vivo, já validan
 |---|---|---|
 | `boot` | Ao ligar | `v` (versão), `chip`, `lcd` (true/false) |
 | `state` | Mudou de tela | `s` (INICIO, OCIOSO, MENU, SENHA, RESULTADO, STATUS, ALERTAS, SOBRE) |
-| `hb` | A cada 1 s | `up` (s), `heap` (bytes), `state`, `jx`, `jy` (0–4095), `btn`, `lcd`, `pc` |
+| `hb` | A cada 1 s | `up` (s), `heap` (bytes), `state`, `jx`, `jy` (0–4095), `btn`, `lcd`, `pc`, `buz` (1 = buzzer ligado, 0 = mudo), `snd` (1 = tocando agora) |
 | `lcd` | A tela mudou | `l1`, `l2` (ícones do LCD como `\u0001`…`\u0007`) |
 | `evt` | Evento de segurança | `id`, `up`, `cat`, `type`, `sev` (info, aviso, alerta, critico), `msg` |
 | `audit` | Resposta ao `AUDIT?` | `ok`, `total`, `bad`, `why`, `anchor`, `epoch` |

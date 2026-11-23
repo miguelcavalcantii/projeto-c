@@ -1,5 +1,10 @@
 # Histórico de versões
 
+## v0.7.0 · 23/11/2026
+- **Buzzer no GPIO 32:** módulo `buzzer_manager` toca sons sem travar o sistema (millis, sem delay) e com prioridade (um bip não corta a sirene).
+- Sons: início, acesso liberado, negado, alerta (3ª/4ª falha), **sirene de 5 s no bloqueio**, bip de lembrete a cada 15 s enquanto bloqueado, bip ao mexer no sistema bloqueado, sirene para log violado e reinício durante bloqueio, alerta quando o leitor RFID some.
+- Tempos e liga/desliga no `config.h`; teste de bancada `09_buzzer`.
+
 ## v0.6.0 · 17/11/2026
 - **Usuários:** vetor de structs com até 4 pessoas, cada uma com PIN e crachá; área do Admin no LCD (definir PIN, cadastrar ou tirar crachá, revogar/reativar).
 - **RFID RC522:** autodetecção e autoteste a cada 10 s, id protegido por HMAC (o UID nunca é guardado), crachá + PIN (2 fatores) e "falha fechada" quando o leitor some.

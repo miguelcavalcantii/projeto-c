@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include "display_manager.h"
 #include "feedback_manager.h"
+#include "buzzer_manager.h"
 
 // Controle do pisca-pisca da luz de fundo, sem usar delay()
 static int trocasRestantes = 0;          // cada piscada = 2 trocas (apaga e acende)
@@ -26,23 +27,27 @@ void feedbackSucesso(String detalhe) {
   displayLuz(true);
   displayMostrarComIcone(ICONE_CADEADO_ABERTO, "ACESSO LIBERADO", "  " + detalhe);
   displayIcone(0, 1, ICONE_CERTO);
+  buzzerTocar(SOM_SUCESSO);
 }
 
 // Antigo LED vermelho: icone de X + luz piscando rapido
 void feedbackErro(String detalhe) {
   displayMostrarComIcone(ICONE_ERRO, "ACESSO NEGADO", "  " + detalhe);
   comecarPiscar(3, 150);
+  buzzerTocar(SOM_ERRO);
 }
 
 void feedbackAlerta(String detalhe) {
   displayMostrarComIcone(ICONE_ALERTA, "ALERTA", "  " + detalhe);
   comecarPiscar(5, 300);
+  buzzerTocar(SOM_ALERTA);
 }
 
 void feedbackBloqueio(String detalhe) {
   displayMostrarComIcone(ICONE_CADEADO, "SIST. BLOQUEADO", "  " + detalhe);
   displayIcone(0, 1, ICONE_RELOGIO);
   comecarPiscar(10, 500);
+  buzzerTocar(SOM_SIRENE);
 }
 
 void feedbackAtualizar() {

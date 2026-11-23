@@ -283,7 +283,7 @@
     <button class="nav-btn" data-page="hardware"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="6" width="12" height="12" rx="1"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/></svg>Hardware</button>
     <button class="nav-btn" data-page="about"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8v.5"/></svg>Sobre o projeto</button>
   </nav>
-  <div class="side-foot">SENTINEL v0.6<br>Algoritmo e Estrutura<br>de Dados · CESAR School</div>
+  <div class="side-foot">SENTINEL v0.7<br>Algoritmo e Estrutura<br>de Dados · CESAR School</div>
 </aside>
 
 <div class="main">
@@ -529,7 +529,7 @@
 </section>
 
 <footer style="padding: 0 28px 24px; font-size: 11px; color: var(--dim); font-family: var(--mono); display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
-  <span>SENTINEL v0.6 · painel local via Web Serial (USB) · nenhuma senha trafega pelo cabo</span><span id="clock"></span>
+  <span>SENTINEL v0.7 · painel local via Web Serial (USB) · nenhuma senha trafega pelo cabo</span><span id="clock"></span>
 </footer>
 </div>
 </div>
@@ -652,6 +652,8 @@ function onHeartbeat(m) {
   $("aRecs").textContent = m.recs; $("aLast").textContent = "#" + m.last; $("aEpoch").textContent = m.epoch;
   setModule("esp", "ok"); setModule("lcd", m.lcd ? "ok" : "fail"); setModule("joy", "ok"); setModule("btn", "ok");
   setModule("usb", m.pc ? "ok" : "wait"); setModule("rfid", m.rfid ? "ok" : "wait");
+  if (m.buz === undefined) { setModule("buz", "off"); setModuleSub("buz", "firmware antigo (sem buzzer)"); }
+  else { setModule("buz", m.buz ? "ok" : "wait"); setModuleSub("buz", m.buz ? (m.snd ? "GPIO 32 · tocando agora" : "GPIO 32 · ligado") : "GPIO 32 · mudo (BUZZER_LIGADO false)"); }
   setModule("auth", m.pin ? "ok" : "wait"); setModule("ids", locked ? "locked" : "ok"); setModule("audit", "ok");
   setModuleSub("ids", `falhas ${m.fails} · restam ${m.left} · bloqueios ${m.locks}`);
   setModuleSub("audit", `${m.recs} registros · época ${m.epoch}`);
@@ -926,7 +928,7 @@ function toast(e) {
 // ---------- Modulos e pinos ----------
 const MODULES = [
   ["esp", "ESP32-WROOM-32", "microcontrolador"], ["lcd", "LCD 16x2 I2C", "GPIO 21 / 22"], ["joy", "Joystick", "GPIO 34 / 35"],
-  ["btn", "Botão", "GPIO 25 · pull-up"], ["rfid", "RFID RC522", "SPI · 18/19/23/26/27"], ["usb", "Painel USB", "Web Serial · PING/PONG"],
+  ["btn", "Botão", "GPIO 25 · pull-up"], ["rfid", "RFID RC522", "SPI · 18/19/23/26/27"], ["buz", "Buzzer", "GPIO 32 · sons e alarme"], ["usb", "Painel USB", "Web Serial · PING/PONG"],
   ["auth", "Senha com hash", "PBKDF2 + salt"], ["ids", "IDS / bloqueio", "força bruta"], ["audit", "Auditoria HMAC", "corrente de hashes"]
 ];
 const STATUS_STYLE = { ok: ["online", "var(--ok)"], fail: ["falha", "var(--critico)"], wait: ["aguardando", "var(--aviso)"], off: ["offline", "var(--dim)"], locked: ["bloqueado", "var(--critico)"] };
@@ -940,7 +942,7 @@ function resetModules() { MODULES.forEach(([id]) => setModule(id, "off")); }
 const PINS = [
   ["RFID RC522", "SDA/SS", 27, ""], ["RFID RC522", "SCK", 18, "SPI"], ["RFID RC522", "MOSI", 23, "SPI"], ["RFID RC522", "MISO", 19, "SPI"],
   ["RFID RC522", "RST", 26, ""], ["RFID RC522", "3.3V", "3V3", "nunca 5 V"], ["LCD I2C", "SDA", 21, "VCC no 5 V"], ["LCD I2C", "SCL", 22, ""],
-  ["Joystick", "VRx", 34, "só entrada · ADC1"], ["Joystick", "VRy", 35, "só entrada · ADC1"], ["Joystick", "+5V", "3V3", "ligar no 3,3 V"], ["Botão", "—", 25, "INPUT_PULLUP"]
+  ["Joystick", "VRx", 34, "só entrada · ADC1"], ["Joystick", "VRy", 35, "só entrada · ADC1"], ["Joystick", "+5V", "3V3", "ligar no 3,3 V"], ["Botão", "—", 25, "INPUT_PULLUP"], ["Buzzer", "+", 32, "saída · tone()"]
 ];
 PINS.forEach(([c, s, g, o]) => { const tr = document.createElement("tr"); tr.append(td(c), td(s, "mono"), td(String(g), "mono cat"), td(o, "muted")); $("pinBody").appendChild(tr); });
 
@@ -1017,7 +1019,7 @@ function demoHash(i) { let h = "", x = (i * 2654435761) >>> 0; for (let k = 0; k
 function startDemo() {
   if (app.connected) return;
   app.demo = true; $("bannerDemo").classList.add("show"); setLink("demo", "DEMO"); $("btnDemo").textContent = "Parar demo"; setBoardButtons(true);
-  demoMsg({ t: "boot", v: "0.6.0 (demo)", chip: "simulado", lcd: true, boot: 4 });
+  demoMsg({ t: "boot", v: "0.7.0 (demo)", chip: "simulado", lcd: true, boot: 4 });
   demoUsers();
   const order = Object.keys(DEMO_SCREENS);
   app.demoTimer = setInterval(() => {
@@ -1025,7 +1027,7 @@ function startDemo() {
     const st = order[Math.floor(demoT / 5) % order.length];
     demoMsg({ t: "hb", up: demoT, heap: 231000 - (demoT % 7) * 340, state: st, jx: Math.round(2048 + Math.sin(demoT / 3) * 1900), jy: Math.round(2048 + Math.cos(demoT / 4) * 1900),
               btn: demoT % 9 === 0 ? 1 : 0, lcd: 1, pc: 1, pin: 1, kdf: 812, rfid: 1, rfv: 146, fails: demoT % 5, left: 5 - (demoT % 5),
-              lock: (demoT % 60) > 45 ? 60 - (demoT % 60) : 0, lvl: 1, locks: Math.floor(demoT / 60) + 1, recs: 20 + demoT, last: 20 + demoT, boot: 4, epoch: 0 });
+              lock: (demoT % 60) > 45 ? 60 - (demoT % 60) : 0, lvl: 1, locks: Math.floor(demoT / 60) + 1, recs: 20 + demoT, last: 20 + demoT, boot: 4, buz: 1, snd: (demoT % 60) === 46 ? 1 : 0, epoch: 0 });
     if (demoT % 5 === 0) demoMsg({ t: "lcd", l1: DEMO_SCREENS[st][0], l2: DEMO_SCREENS[st][1] });
     if (Math.random() < 0.3) { const e = DEMO_EVENTS[Math.floor(Math.random() * DEMO_EVENTS.length)], id = demoId++;
       demoMsg({ t: "evt", id, up: demoT, cat: e[0], type: e[1], sev: e[2], msg: e[3] + " (simulado)", usr: e[4], h: demoHash(id).slice(0, 16) }); }

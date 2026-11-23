@@ -9,7 +9,7 @@
 #define CONFIG_H
 
 // ---------- Versao do firmware ----------
-#define FIRMWARE_VERSION "0.6.0"
+#define FIRMWARE_VERSION "0.7.0"
 
 // ---------- RFID RC522 (barramento SPI) ----------
 // O firmware funciona COM ou SEM o leitor: ele detecta sozinho se o
@@ -51,10 +51,18 @@
 
 // ---------- LEDs ----------
 // REMOVIDOS por falta de cabos. A funcao deles foi para o LCD
-// (feedback_manager). Para religar no futuro, basta mexer so no
-// feedback_manager.cpp.
-// #define PIN_LED_GREEN  32
-// #define PIN_LED_RED    33
+// (feedback_manager) e para o buzzer.
+
+// ---------- Buzzer (bip e alarme) ----------
+// Ligacao: perna + (a mais comprida) no GPIO 32, perna - no GND.
+#define PIN_BUZZER     32
+#define BUZZER_LIGADO  true     // false = sistema mudo (para apresentar sem barulho)
+#define BUZZER_ATIVO   false    // true se for buzzer ATIVO (adesivo em cima, fundo fechado)
+                                // e o som sair estranho; passivo/nao sei = false
+#define BUZZER_BIP_CURTO_MS   100    // bips de sucesso e alerta
+#define BUZZER_ERRO_MS        500    // bip longo de senha negada
+#define BUZZER_SIRENE_CICLOS  10     // sirene do bloqueio: 10 x 0,5 s = 5 segundos
+#define BUZZER_LEMBRETE_MS    15000  // bloqueado: bip curto a cada 15 s
 
 // ---------- Usuarios ----------
 // Ate 4 usuarios. O 1o (posicao 0) e o ADMINISTRADOR: a senha criada no

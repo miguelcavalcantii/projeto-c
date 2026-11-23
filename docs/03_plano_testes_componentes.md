@@ -1,6 +1,6 @@
 # 03 – Plano de testes individuais dos componentes (Etapa 2)
 
-Regra: **não avançar para a Etapa 3 enquanto os testes 01 a 08 não passarem.** A coluna "Resultado obtido" é preenchida **pelo grupo**, com o que realmente aconteceu. Se falhar, anote o erro.
+Regra: **não avançar para a Etapa 3 enquanto os testes 01 a 09 não passarem.** A coluna "Resultado obtido" é preenchida **pelo grupo**, com o que realmente aconteceu. Se falhar, anote o erro.
 
 Para cada teste: abra o `.ino` da pasta `tests/hardware/NN_nome/` na Arduino IDE, grave na placa e abra o Monitor Serial em **115200**.
 
@@ -14,6 +14,7 @@ Para cada teste: abra o `.ino` da pasta `tests/hardware/NN_nome/` na Arduino IDE
 | 06 | LCD | Escrita no display | Ajustar `LCD_ADDR`; regular o contraste | "SENTINEL v0.1" e o contador de segundos | |
 | 07 | RFID | SPI + leitura de UID | RC522 em **3,3 V** | Versão 0x91/0x92 (ou 0x88/0xB2, clone); UID e tipo do cartão aparecem | Versão: 0x__ Tipo do cartão: |
 | 08 | Integrado | Tudo junto sem conflito | Todos ligados | O joystick muda o dígito, o botão acende o verde e o cartão acende o vermelho e aparece no LCD | |
+| 09 | Buzzer | Saída tone() no GPIO 32 | Perna + no 32, perna − no GND | Os 4 sons (liberado, negado, alerta, sirene) se repetem a cada 3 s | |
 
 ## Problemas comuns
 

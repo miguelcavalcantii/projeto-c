@@ -187,8 +187,11 @@ void tratarHistorico(EventoEntrada ev) {
 
 // Mexer em qualquer coisa durante o bloqueio e suspeito: registra
 // (a 1a tentativa e depois a cada 5, para nao encher o log)
+unsigned long ultimoLembrete = 0;
+
 void registrarTentativaBloqueio(String origem) {
   unsigned long n = secTentativaDuranteBloqueio();
+  buzzerTocar(SOM_ERRO);   // mexeu com o sistema bloqueado: bip de negado
   if (n == 1 || n % 5 == 0) {
     registrarEvento("ids", "TENTATIVA_DURANTE_BLOQUEIO", SEV_ALERTA,
                     String(n) + " tentativa(s) com o sistema bloqueado (" + origem + ")", "-");
@@ -197,6 +200,11 @@ void registrarTentativaBloqueio(String origem) {
 
 void tratarBloqueado(EventoEntrada ev) {
   if (ev != EV_NENHUM) registrarTentativaBloqueio("joystick/botao");
+  // Enquanto estiver bloqueado, um bip curto de lembrete de tempos em tempos
+  if (millis() - ultimoLembrete >= BUZZER_LEMBRETE_MS) {
+    ultimoLembrete = millis();
+    if (millis() - estadoDesde >= 6000) buzzerTocar(SOM_LEMBRETE);  // nao em cima da sirene
+  }
   // Atualiza a contagem regressiva 1 vez por segundo
   // (espera 1,5 s no inicio para o aviso "SIST. BLOQUEADO" aparecer antes)
   if (millis() - estadoDesde >= 1500 && millis() - ultimaAtualizacao >= 1000) {
@@ -218,6 +226,7 @@ void auditoriaVerificar() {
                     "Registro #" + String(r.idComErro) + ": " + r.motivo, "-");
     displayMostrarComIcone(ICONE_ERRO, "LOG VIOLADO!", "  Registro #" + String(r.idComErro));
     feedbackPiscar(8, 250);
+    buzzerTocar(SOM_SIRENE);
   }
   mostrarResultado(RESULTADO_LONGO_MS);
 }

@@ -27,6 +27,7 @@
 #include "input_manager.h"
 #include "display_manager.h"
 #include "feedback_manager.h"
+#include "buzzer_manager.h"
 #include "telemetry_manager.h"
 #include "authentication.h"
 #include "security_engine.h"
@@ -287,6 +288,7 @@ void setup() {
 
   // Cada modulo e iniciado; se um falhar, o sistema avisa e continua
   inputIniciar();
+  buzzerIniciar();
   authIniciar();
   secIniciar();
   usuariosIniciar();
@@ -313,6 +315,9 @@ void setup() {
   if (secBloqueioRetomadoNoBoot()) {
     registrarEvento("ids", "REINICIO_DURANTE_BLOQUEIO", SEV_ALERTA,
                     "Bloqueio mantido apos reinicio: faltam " + String(secSegundosRestantes()) + " s", "-");
+    buzzerTocar(SOM_SIRENE);
+  } else {
+    buzzerTocar(SOM_INICIO);
   }
 
   ultimaInteracao = millis();
@@ -323,6 +328,7 @@ void loop() {
   // 1) Atualiza os modulos (rapido, sem travar)
   inputAtualizar();
   feedbackAtualizar();
+  buzzerAtualizar();
   secAtualizar();
   rfidAtualizar();
   telemetriaAtualizar();
@@ -330,6 +336,7 @@ void loop() {
   // 2) Avisos do leitor RFID (falha de comunicacao e uma regra do IDS)
   if (rfidPerdeuConexao()) {
     registrarEvento("hardware", "RFID_FALHA_COMUNICACAO", SEV_ALERTA, "Leitor RFID parou de responder", "-");
+    buzzerTocar(SOM_ALERTA);   // leitor arrancado/desligado pode ser sabotagem
   }
   if (rfidReconectou()) {
     registrarEvento("rfid", "RFID_CONECTADO", SEV_INFO, "Leitor RFID detectado (0x" + String(rfidVersao(), HEX) + ")", "-");

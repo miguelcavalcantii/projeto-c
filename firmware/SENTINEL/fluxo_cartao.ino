@@ -100,10 +100,12 @@ void cartaoNaTelaDeEspera(String id) {
                     "Cracha " + idCurto(id) + " (" + rfidUltimoTipo() + ", UID de " +
                     String(rfidUltimoTamanhoUid()) + " bytes)", nome);
     displayMostrarComIcone(ICONE_CERTO, "Cracha salvo", "  " + nome);
+    buzzerTocar(SOM_SUCESSO);
   } else {
     registrarEvento("admin", "CARTAO_EM_USO", SEV_AVISO, "Cracha ja pertence a outro usuario", nome);
     displayMostrarComIcone(ICONE_ERRO, "Ja tem dono", "  outro usuario");
     feedbackPiscar(3, 150);
+    buzzerTocar(SOM_ERRO);
   }
   mostrarResultado(RESULTADO_MS);
 }

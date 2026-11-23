@@ -140,6 +140,7 @@ void senhaCompleta() {
                         "Hash salvo na NVS (" + String(authIteracoes()) + " iter, " +
                         String(authUltimoTempoMs()) + " ms)", nome);
         displayMostrarComIcone(ICONE_CERTO, "Senha salva", "  " + nome);
+        buzzerTocar(SOM_SUCESSO);
       } else {
         registrarEvento("auth", "ERRO_NVS", SEV_CRITICO, "Falha ao gravar a senha na memoria", nome);
         feedbackErro("Erro ao salvar");

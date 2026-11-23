@@ -4,6 +4,7 @@
 - **Buzzer no GPIO 32:** módulo `buzzer_manager` toca sons sem travar o sistema (millis, sem delay) e com prioridade (um bip não corta a sirene).
 - Sons: início, acesso liberado, negado, alerta (3ª/4ª falha), **sirene de 5 s no bloqueio**, bip de lembrete a cada 15 s enquanto bloqueado, bip ao mexer no sistema bloqueado, sirene para log violado e reinício durante bloqueio, alerta quando o leitor RFID some.
 - Tempos e liga/desliga no `config.h`; teste de bancada `09_buzzer`.
+- **Compatibilidade:** HMAC-SHA256 montado no próprio código (RFC 2104) sobre o SHA-256 do mbedTLS, porque as versões novas da placa ESP32 no Arduino IDE não têm mais `mbedtls_md_hmac_*`. O resultado é idêntico (conferido com o Python), então senhas já salvas continuam valendo.
 
 ## v0.6.0 · 17/11/2026
 - **Usuários:** vetor de structs com até 4 pessoas, cada uma com PIN e crachá; área do Admin no LCD (definir PIN, cadastrar ou tirar crachá, revogar/reativar).
